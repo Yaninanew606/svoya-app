@@ -8,6 +8,7 @@ import {
 import { useAppStore } from '../stores/appStore';
 import TabBar from '../components/TabBar';
 import WaterTracker from '../components/WaterTracker';
+import FastingWindow from '../components/FastingWindow';
 import type { Meal, NutritionPlan } from '../types';
 
 const DAY_NAMES_SHORT = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
@@ -238,7 +239,9 @@ function getTelegramFirstName(): string {
 export default function NutritionScreen() {
   const navigate = useNavigate();
   const plan = useAppStore((s) => s.plan);
+  const questionnaire = useAppStore((s) => s.questionnaire);
   const [selectedDay, setSelectedDay] = useState(getTodayIndex);
+  const hasFasting = questionnaire.foodPreferences?.includes('intermittent_fasting');
   const firstName = useMemo(() => getTelegramFirstName(), []);
   const motivation = useMemo(() => MOTIVATIONS[Math.floor(Math.random() * MOTIVATIONS.length)], []);
 
@@ -293,6 +296,13 @@ export default function NutritionScreen() {
       <div className="px-6 mb-4">
         <WeekStrip selectedDay={selectedDay} onSelect={setSelectedDay} />
       </div>
+
+      {/* Fasting window (if intermittent fasting selected) */}
+      {hasFasting && (
+        <div className="px-6 mb-4">
+          <FastingWindow dailySchedule={questionnaire.dailySchedule} />
+        </div>
+      )}
 
       {/* Water tracker */}
       <div className="px-6 mb-4">
