@@ -51,6 +51,7 @@ export default function WelcomeScreen() {
   const navigate = useNavigate();
   const { isReturningUser, clearAll } = useAppStore();
   const [showModal, setShowModal] = useState(false);
+  const [loaded, setLoaded] = useState(false);
 
   const handleReset = () => {
     clearAll();
@@ -65,126 +66,56 @@ export default function WelcomeScreen() {
 
   useEffect(() => {
     try { window.Telegram?.WebApp?.expand(); } catch {}
+    const img = new Image();
+    img.src = '/welcome.png';
+    img.onload = () => setLoaded(true);
   }, []);
 
   return (
     <motion.div
-      className="min-h-screen flex flex-col items-center justify-center px-8"
-      style={{ backgroundColor: '#1E1E1E' }}
+      className="min-h-screen w-full bg-cover bg-center bg-no-repeat relative"
+      style={{
+        backgroundImage: loaded ? 'url(/welcome.png)' : 'none',
+        backgroundColor: '#1A1A1A',
+      }}
       initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.8 }}
+      animate={{ opacity: loaded ? 1 : 0 }}
+      transition={{ duration: 0.6 }}
     >
-      <style>{`
-        @keyframes ring1 { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }
-        @keyframes ring2 { from { transform: rotate(360deg) } to { transform: rotate(0deg) } }
-        @keyframes glow { 0%,100% { opacity: 0.25 } 50% { opacity: 0.45 } }
-      `}</style>
+      {/* Invisible area over the design's "Начать" button position */}
+      <button
+        onClick={() => navigate(isReturningUser ? '/nutrition' : '/questionnaire')}
+        className="absolute left-0 right-0 mx-auto"
+        style={{
+          bottom: '14%',
+          width: '55%',
+          height: 50,
+          background: 'transparent',
+        }}
+      />
 
-      <div className="flex flex-col items-center gap-6">
+      {/* Invisible area over "Как это работает" position */}
+      <button
+        onClick={() => setShowModal(true)}
+        className="absolute left-0 right-0 mx-auto"
+        style={{
+          bottom: '8%',
+          width: '50%',
+          height: 30,
+          background: 'transparent',
+        }}
+      />
 
-        {/* Animated logo */}
-        <motion.div
-          className="relative flex items-center justify-center"
-          style={{ width: 150, height: 150 }}
-          initial={{ scale: 0.7, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 1, ease: 'easeOut' }}
+      {/* Reset button — very bottom, barely visible */}
+      {isReturningUser && (
+        <button
+          onClick={handleReset}
+          className="absolute left-0 right-0 mx-auto text-center"
+          style={{ bottom: '3%', color: 'rgba(255,255,255,0.1)', fontSize: 10 }}
         >
-          {/* Glow */}
-          <div
-            className="absolute rounded-full"
-            style={{
-              width: 140, height: 140,
-              background: 'radial-gradient(circle, rgba(196,153,111,0.35) 0%, rgba(196,153,111,0.1) 50%, transparent 70%)',
-              animation: 'glow 4s ease-in-out infinite',
-            }}
-          />
-
-          {/* Outer ring */}
-          <div className="absolute" style={{ width: 130, height: 130, animation: 'ring1 18s linear infinite' }}>
-            <div className="w-full h-full rounded-full" style={{ border: '2px solid rgba(212,168,130,0.45)' }} />
-          </div>
-
-          {/* Inner ring */}
-          <div className="absolute" style={{ width: 100, height: 100, animation: 'ring2 25s linear infinite' }}>
-            <div className="w-full h-full rounded-full" style={{ border: '2.5px solid rgba(196,153,111,0.8)' }} />
-          </div>
-
-          {/* Leaf — positioned inside inner ring, lower-right like on banner */}
-          <svg width="40" height="50" viewBox="0 0 40 50" fill="none" className="absolute" style={{ bottom: 28, right: 32 }}>
-            <path
-              d="M14 42 C14 42 5 28 16 16 C25 6 33 17 33 17 C33 17 26 35 17 38 C14 39 14 42 14 42 Z"
-              stroke="rgba(196,153,111,0.9)"
-              strokeWidth="1.8"
-              fill="none"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M17 37 Q22 27 23 17"
-              stroke="rgba(196,153,111,0.4)"
-              strokeWidth="1.2"
-              fill="none"
-              strokeLinecap="round"
-            />
-          </svg>
-        </motion.div>
-
-        {/* App name */}
-        <motion.h1
-          className="text-white text-4xl tracking-wide"
-          style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 400 }}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3, duration: 0.6 }}
-        >
-          Своя
-        </motion.h1>
-
-        {/* Slogan */}
-        <motion.p
-          className="text-center text-sm leading-relaxed"
-          style={{ color: 'rgba(255,255,255,0.4)' }}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5, duration: 0.6 }}
-        >
-          Питание и тренировки,<br />которые понимают твоё здоровье
-        </motion.p>
-
-        {/* CTA */}
-        <motion.button
-          whileTap={{ scale: 0.97 }}
-          onClick={() => navigate(isReturningUser ? '/nutrition' : '/questionnaire')}
-          className="w-full max-w-[260px] rounded-2xl py-4 text-base font-semibold mt-4"
-          style={{ background: 'linear-gradient(135deg, #B5886A, #D4A882)', color: 'white' }}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7, duration: 0.5 }}
-        >
-          {isReturningUser ? 'Продолжить' : 'Начать'}
-        </motion.button>
-
-        {/* How it works */}
-        <motion.button
-          onClick={() => setShowModal(true)}
-          className="text-sm underline underline-offset-4"
-          style={{ color: 'rgba(255,255,255,0.3)' }}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.9 }}
-        >
-          Как это работает
-        </motion.button>
-
-        {/* Reset */}
-        {isReturningUser && (
-          <button onClick={handleReset} className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.15)' }}>
-            Начать заново
-          </button>
-        )}
-      </div>
+          Начать заново
+        </button>
+      )}
 
       <AnimatePresence>
         {showModal && <HowItWorksModal onClose={() => setShowModal(false)} />}
