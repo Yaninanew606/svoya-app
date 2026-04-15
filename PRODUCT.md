@@ -1,0 +1,308 @@
+# Своя — Персональный wellness-ассистент
+## Telegram Mini App для женщин 35+
+
+---
+
+## Ссылки
+
+- **Telegram бот:** @SvoyaApp_bot
+- **Frontend:** https://frontend-xi-mauve-24.vercel.app
+- **Backend API:** http://72.56.80.106:3200
+- **GitHub:** https://github.com/Yaninanew606/svoya-app
+- **Кросс-промо:** @BreathFlowAI_bot (дыхательные практики)
+
+---
+
+## Стек технологий
+
+### Frontend
+- React 19 + TypeScript
+- Tailwind CSS v4
+- Zustand (state + localStorage persist)
+- React Router v7
+- Framer Motion (анимации)
+- Lucide React (иконки)
+- Vite (сборка)
+- Vercel (хостинг)
+
+### Backend
+- Node.js 20 + Express 5
+- Prisma 5 + PostgreSQL
+- Anthropic Claude API (генерация планов)
+- Grammy (Telegram Bot)
+- Timeweb VPS (хостинг)
+- systemd (сервис wellness-app)
+
+---
+
+## Дизайн-система
+
+### Цвета
+- Primary: `#B5886A` (тёплый терракот)
+- Secondary: `#E8D5C4` (персиковый)
+- Background: `#FAF7F4` (кремовый)
+- Text: `#3D2B1F` (глубокий шоколад)
+- Accent: `#7A9E7E` (шалфей)
+
+### Шрифты
+- Заголовки: Cormorant Garamond (серифный, элегантный)
+- Тело: Nunito (мягкий, читаемый)
+
+### Стиль
+- Минимализм в духе Apple
+- Без эмодзи — только Lucide иконки
+- Скруглённые карточки (rounded-2xl)
+- Мягкие тени (shadow-sm)
+- Тёплая, женственная палитра
+
+### Брендинг (единый стиль с BreathFlow)
+- Тёмный фон (#1A1A1A) для аватарок/баннеров
+- Концентрические светящиеся кольца
+- BreathFlow: холодные белые кольца (воздух)
+- Своя: тёплые терракотовые кольца (#B5886A, забота)
+
+---
+
+## Экраны и маршруты
+
+| Маршрут | Компонент | Описание |
+|---------|-----------|----------|
+| `/` | WelcomeScreen | Приветствие, кнопки "Начать" / "Продолжить" / "Начать заново" |
+| `/questionnaire` | QuestionnaireScreen | 11-шаговая анкета |
+| `/generating` | GeneratingScreen | Генерация плана (анимация загрузки) |
+| `/onboarding` | OnboardingScreen | Персональный онбординг (2 слайда) |
+| `/weekly-plan` | WeeklyPlanScreen | Недельный план + экспорт в Google Calendar (.ics) |
+| `/nutrition` | NutritionScreen | Питание: неделя, приёмы пищи, трекер воды, список продуктов |
+| `/diary` | FoodDiaryScreen | Дневник питания: фото/текст, AI-оценка калорий, план vs факт |
+| `/workout` | WorkoutScreen | Тренировки: неделя, упражнения, пошаговый режим с таймером |
+| `/pelvic-floor` | PelvicFloorScreen | Тренировка тазового дна (4 упражнения Кегеля) |
+| `/checkin` | CheckinScreen | Ежедневный чек-ин (5 шагов + итог) |
+| `/support` | SupportScreen | Мотивация, стрик, план на завтра |
+| `/analytics` | AnalyticsScreen | Графики, тренды, AI-рекомендации |
+
+### Навигация (TabBar, 4 таба)
+1. Питание (UtensilsCrossed)
+2. Тренировка (Dumbbell)
+3. Чек-ин (ClipboardCheck)
+4. Аналитика (BarChart3)
+
+---
+
+## Анкета (11 шагов)
+
+1. **Возраст** — слайдер 35-70
+2. **Цель** — до 2: тонус, снижение веса, энергия, осанка
+3. **Уровень подготовки** — новичок / возвращаюсь / занимаюсь / активно
+4. **Время на тренировку** — 15 / 20 / 30 / 45 мин
+5. **Предпочтения в питании** — до 3: без мяса, без молочного, без глютена, мин. сахара, интервальное голодание
+6. **Режим дня** — ранний / стандартный / поздний / ненормированный
+7. **Тип тренировок** — до 3: силовые, кардио, растяжка, йога, ортопедическая гимнастика
+8. **Ограничения по здоровью** — колени, спина, давление, варикоз, шея, другое
+9. **Замеры** (необязательно) — рост, вес, талия
+10. **Цикл и гормоны** — регулярный / нерегулярный / перименопауза / менопауза + дата последней менструации
+11. **Особенности** — роды, сидячая работа, головные боли, отёки, приливы, проблемы со сном
+
+---
+
+## Функциональность
+
+### Питание
+- Недельный план с переключением по дням
+- Карточки приёмов пищи: завтрак, обед, ужин, перекус
+- Учёт пищевых предпочтений (вегетарианство, безглютеновое, без молочного)
+- Интервальное голодание: визуальное окно приёма пищи (таймлайн)
+- Калории, белки, жиры, углеводы на каждый приём
+- Список ингредиентов
+- Список продуктов на неделю с чекбоксами
+- Копирование и скачивание списка продуктов
+- Кнопка "Дневник питания"
+
+### Трекер воды
+- Круговой прогресс-кольцо (0/8 стаканов)
+- 8 визуальных кружочков для заполнения
+- Кнопки +/−
+- Сбрасывается ежедневно
+- Хранится в localStorage
+
+### Дневник питания
+- План vs Факт: таблица с цветовой разметкой
+- Таймлайн окна голодания (для интервального голодания)
+- Логирование: текст + фото еды
+- AI-оценка калорий по тексту (keyword-based MVP)
+- Итог дня: прогресс-бар + AI-подсказка
+- localStorage persist
+
+### Тренировки
+- Недельная программа с полоской дней (Пн-Вс)
+- Ротация: 2-3 силовые, 1-2 кардио, 1-2 растяжка, 1+ отдых
+- Перестановка дней: кнопка "Настроить" → tap-to-swap
+- 3 секции: Разминка, Основной блок, Заминка
+- Пошаговый режим тренировки с таймером
+- Модификации для каждого упражнения
+- Ортопедические упражнения (метод Бубновского)
+- Бейдж сложности (лёгкая / средняя / интенсивная)
+
+### Тазовое дно
+- 4 упражнения Кегеля: медленное сжатие, быстрые сокращения, удержание, лифт
+- Визуальный пульсирующий круг (сжатие/расслабление)
+- Таймер обратного отсчёта
+- Хаптик-фидбек через Telegram WebApp
+- Отметка "Выполнено сегодня"
+- Карточка в WorkoutScreen с кнопкой "Начать"
+
+### Умные дни отдыха
+- 3 варианта активного восстановления:
+  - Мягкая йога (10 мин, 5 упражнений)
+  - Мобильность суставов (8 мин, 5 упражнений)
+  - Дыхательная практика (5 мин, 3 упражнения)
+- Каждый раскрывается и запускается в пошаговом режиме
+- Кросс-промо BreathFlow под вариантами
+
+### Чек-ин (5 шагов + итог)
+1. Самочувствие (1-4, цветовые карточки)
+2. Сон (да / нет / почти)
+3. Питание (да / частично / нет)
+4. Тренировка (да / частично / нет / пропустила)
+5. Симптомы (приливы, головная боль, суставы, отёки, вздутие, тревожность, бессонница)
+6. Итоги дня + 3 кнопки финализации
+
+### Аналитика
+- График настроения за 7 дней (цветные столбики)
+- Круговые индикаторы: питание, тренировки, сон (X/7 дней)
+- Тренды: улучшается / стабильно / ухудшается
+- AI-рекомендации на основе данных
+- Скачать отчёт (.txt)
+
+### Персональный онбординг (после генерации плана)
+- Слайд 1: динамические карточки на основе ответов анкеты
+  - Учёт цикла, пищевых предпочтений, здоровья, уровня подготовки
+  - "Я учла фазы твоего цикла", "Все блюда без мяса", "Добавлены упражнения для тазового дна"
+- Слайд 2: мини-расписание недели + статистика
+
+### Сессия и авторизация
+- Telegram WebApp initData HMAC-SHA256 валидация
+- Demo-режим без Telegram (mock user id: 12345)
+- Восстановление сессии при открытии (проверка сервера)
+- Если сервер пуст — автоочистка localStorage
+- Кнопка "Начать заново" на WelcomeScreen
+- Zustand persist в localStorage + серверная привязка к Telegram ID
+
+### Google Calendar
+- Экспорт недельного плана тренировок в .ics файл
+- Выбор дней через чекбоксы
+- Время привязано к режиму дня из анкеты
+
+---
+
+## Backend API
+
+| Метод | Endpoint | Описание |
+|-------|----------|----------|
+| POST | `/api/generate-plan` | Генерация плана (questionnaire + preferences) |
+| GET | `/api/plan/today` | Текущий план (из User.currentPlan) |
+| POST | `/api/checkin` | Сохранение чек-ина + адаптивная логика |
+| POST | `/api/motivation` | Мотивационное сообщение от AI |
+| GET | `/health` | Проверка здоровья сервера |
+
+### Адаптивная логика
+- Снижение нагрузки: плохое настроение, тяжёлый день, боль
+- Повышение нагрузки: 3+ дня подряд хороших результатов
+- Щадящий режим: 5-минутная растяжка при дискомфорте
+
+### База данных (Prisma)
+- **User**: telegramId, questionnaire, currentPlan, streak, difficulty
+- **Checkin**: mood, sleep, nutrition, workout, status, date
+- **Plan**: nutrition (JSON), workout (JSON), date
+
+---
+
+## Инфраструктура
+
+### Vercel (Frontend)
+- Проект: chizhevskaya86-1299s-projects/frontend
+- URL: https://frontend-xi-mauve-24.vercel.app
+- Rewrites: `/api/*` → http://72.56.80.106:3200/api/*
+- SPA: `/(*)` → /index.html
+
+### Timeweb VPS (Backend)
+- IP: 72.56.80.106
+- Порт: 3200 (открыт в UFW)
+- Сервис: wellness-app.service (systemd, auto-restart)
+- PostgreSQL: localhost:5432, БД wellness_db
+- Node.js 20
+
+### Переменные окружения (Backend)
+```
+DATABASE_URL=postgresql://wellness:***@localhost:5432/wellness_db
+TELEGRAM_BOT_TOKEN=8738749633:***
+ANTHROPIC_API_KEY=sk-***
+WEBAPP_URL=https://frontend-xi-mauve-24.vercel.app
+PORT=3200
+```
+
+---
+
+## Генерация плана (Mock + Claude AI)
+
+### Mock-режим (без ANTHROPIC_API_KEY или при ошибке API)
+- Полноценные мок-данные на русском языке
+- Учитывает пищевые предпочтения (вегетарианство, безглютеновое, и т.д.)
+- Интервальное голодание (убирает завтрак, 8-часовое окно)
+- Недельная ротация тренировок по уровню подготовки
+- Упражнения Бубновского для спины
+- Калории по формуле Миффлина-Сан Жеора (если есть замеры)
+
+### Claude AI режим
+- Модель: claude-sonnet-4-20250514
+- Системный промпт: wellness-ассистент для женщин 35+
+- Генерация: nutrition + weeklyWorkout (7 дней) + message
+- Fallback на mock при ошибках
+
+---
+
+## Telegram бот (@SvoyaApp_bot)
+
+### Команды
+- `/start` — Открыть Mini App (inline кнопка)
+- `/plan` — План на сегодня
+- `/checkin` — Чек-ин
+- `/help` — Справка
+
+### Кросс-промо
+- BreathFlow рекомендуется в днях отдыха и на экране поддержки
+- Ссылка: t.me/BreathFlowAI_bot
+
+---
+
+## Промпты для генерации аватарки и баннеров
+
+### Аватарка (1:1, 512x512)
+```
+Minimalist dark app icon, solid charcoal-black background (#1A1A1A). Center: a single elegant glowing circle made of two concentric thin rings in warm terracotta-gold gradient (#B5886A to #E8D5C4), soft inner glow. Inside the circle — a subtle abstract leaf silhouette formed by one curved line, same warm gradient. No text, no details, ultra-clean. Style: premium iOS app icon, matte dark background with warm metallic accent. Soft ambient light emanating from the rings. Square format, no rounded corners.
+```
+
+### Горизонтальный баннер (16:9)
+```
+Ultra-minimalist dark banner, charcoal-black background (#1A1A1A). Center: two concentric glowing rings in warm terracotta-gold gradient (#B5886A to #E8D5C4) with soft ambient light, similar to breathing app aesthetic. A delicate leaf silhouette integrated into the ring design. Below the rings: text "Своя" in thin elegant white sans-serif font (like SF Pro Light). Below that in smaller gray text (#666): "тренировки и питание". Bottom subtle text in dark gray: "@SvoyaApp_bot". Clean, premium, dark luxury wellness aesthetic. Horizontal format 16:9.
+```
+
+### Вертикальный баннер (9:19)
+```
+Ultra-minimalist dark vertical poster, charcoal-black background (#1A1A1A). Upper third: text "Своя" in large thin white elegant font. Center: two concentric glowing rings in warm terracotta-gold (#B5886A to #E8D5C4), soft radial glow, a minimal leaf shape within. Lower third: text "В своём темпе — к своей лучшей форме" in medium white text. Bottom: small gray text "@SvoyaApp_bot". Dark premium wellness aesthetic, same visual language as BreathFlow but warm tones instead of cool. Vertical 9:19 format.
+```
+
+---
+
+## Roadmap (после MVP)
+
+- [ ] Подключить реальный Claude API для генерации планов
+- [ ] AI-анализ фото еды (распознавание блюд и калорий)
+- [ ] История прогресса за 7/14/30 дней (графики)
+- [ ] Уведомления от бота (утро/вечер cron)
+- [ ] Интеграция с Apple Health / Google Fit
+- [ ] Голосовые подсказки во время тренировки
+- [ ] Трекер шагов
+- [ ] Платная подписка (Telegram Stars)
+- [ ] Сообщество 35+ (чат/форум)
+- [ ] Генерация иллюстраций упражнений (AI-арт, единый стиль)
+- [ ] Видео-демонстрации упражнений
