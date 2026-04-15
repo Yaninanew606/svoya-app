@@ -73,7 +73,7 @@ export default function WelcomeScreen() {
 
   return (
     <motion.div
-      className="min-h-screen w-full bg-cover bg-center bg-no-repeat relative"
+      className="min-h-screen w-full bg-contain bg-top bg-no-repeat relative"
       style={{
         backgroundImage: loaded ? 'url(/welcome.png)' : 'none',
         backgroundColor: '#1A1A1A',
