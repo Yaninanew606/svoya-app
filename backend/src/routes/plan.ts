@@ -12,35 +12,37 @@ planRoutes.post('/generate-plan', async (req, res) => {
   try {
     const telegramId = BigInt(req.telegramUser!.id);
     const { questionnaire, preferences } = req.body;
-    const { age, goals, activityLevel, timeAvailable, healthRestrictions } = questionnaire || req.body;
-    const nutritionMode = preferences?.nutritionMode;
-    const difficulty = preferences?.difficulty;
+    const q = questionnaire || req.body;
 
     // Find or create user
     const user = await prisma.user.upsert({
       where: { telegramId },
       update: {
-        questionnaire: questionnaire || req.body,
-        difficulty: difficulty || 'medium',
+        questionnaire: q,
+        difficulty: preferences?.difficulty || 'medium',
         lastActive: new Date(),
       },
       create: {
         telegramId,
-        questionnaire: questionnaire || req.body,
-        difficulty: difficulty || 'medium',
+        questionnaire: q,
+        difficulty: preferences?.difficulty || 'medium',
         lastActive: new Date(),
       },
     });
 
     // Generate plan via Claude
     const plan = await generatePlan({
-      age: age || 45,
-      goals: goals || [],
-      activityLevel: activityLevel || 'light',
-      timeAvailable: timeAvailable || 15,
-      healthRestrictions: healthRestrictions || [],
-      nutritionMode,
-      difficulty: difficulty || user.difficulty,
+      age: q.age || 45,
+      goals: q.goals || [],
+      fitnessLevel: q.fitnessLevel || q.activityLevel || 'beginner',
+      timeAvailable: q.timeAvailable || 15,
+      foodPreferences: q.foodPreferences || [],
+      dailySchedule: q.dailySchedule || 'standard',
+      trainingTypes: q.trainingTypes || [],
+      healthRestrictions: q.healthRestrictions || [],
+      measurements: q.measurements,
+      nutritionMode: preferences?.nutritionMode,
+      difficulty: preferences?.difficulty || user.difficulty,
     });
 
     // Save plan to DB

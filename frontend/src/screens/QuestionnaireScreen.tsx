@@ -4,25 +4,52 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAppStore } from '../stores/appStore';
 import ProgressBar from '../components/ProgressBar';
 
+const TOTAL_STEPS = 9;
+
 const GOALS = [
-  { id: 'tonus', emoji: '🏃', label: 'Тонус и упругость' },
-  { id: 'weight', emoji: '⚖️', label: 'Снижение веса' },
-  { id: 'energy', emoji: '⚡', label: 'Больше энергии' },
-  { id: 'posture', emoji: '🧍', label: 'Осанка и спина' },
+  { id: 'tonus', label: 'Тонус и упругость' },
+  { id: 'weight', label: 'Снижение веса' },
+  { id: 'energy', label: 'Больше энергии' },
+  { id: 'posture', label: 'Осанка и спина' },
 ];
 
-const ACTIVITY_LEVELS = [
-  { id: 'sedentary', emoji: '🛋️', label: 'Почти не двигаюсь' },
-  { id: 'light', emoji: '🚶', label: 'Прогулки, лёгкая активность' },
-  { id: 'moderate', emoji: '🏋️', label: 'Тренируюсь 1–2 раза в неделю' },
-  { id: 'active', emoji: '💪', label: 'Активна регулярно' },
+const FITNESS_LEVELS = [
+  { id: 'beginner', label: 'Новичок — никогда не тренировалась регулярно' },
+  { id: 'returning', label: 'Возвращаюсь — был перерыв больше полугода' },
+  { id: 'moderate', label: 'Занимаюсь — тренируюсь 1-2 раза в неделю' },
+  { id: 'active', label: 'Активно тренируюсь — 3+ раз в неделю' },
 ];
 
 const TIME_OPTIONS = [
-  { value: 10, emoji: '⏱️', label: 'До 10 минут' },
-  { value: 15, emoji: '🕐', label: '15 минут' },
-  { value: 20, emoji: '🕑', label: '20 минут' },
-  { value: 30, emoji: '🕒', label: '30+ минут' },
+  { value: 15, label: 'До 15 минут' },
+  { value: 20, label: '20 минут' },
+  { value: 30, label: '30 минут' },
+  { value: 45, label: '45+ минут' },
+];
+
+const FOOD_OPTIONS = [
+  { id: 'no-restrictions', label: 'Без ограничений — ем все' },
+  { id: 'no-meat', label: 'Не ем мясо' },
+  { id: 'no-dairy', label: 'Не ем молочное' },
+  { id: 'no-gluten', label: 'Без глютена' },
+  { id: 'low-sugar', label: 'Минимум сахара' },
+  { id: 'intermittent-fasting', label: 'Интервальное голодание' },
+];
+
+const SCHEDULE_OPTIONS = [
+  { id: 'early', label: 'Ранний подъем — встаю до 7:00' },
+  { id: 'standard', label: 'Стандартный — встаю 7:00-9:00' },
+  { id: 'late', label: 'Поздний — встаю после 9:00' },
+  { id: 'irregular', label: 'Ненормированный график' },
+];
+
+const TRAINING_TYPE_OPTIONS = [
+  { id: 'strength', label: 'Силовые с весом тела' },
+  { id: 'cardio', label: 'Кардио и жиросжигание' },
+  { id: 'flexibility', label: 'Растяжка и гибкость' },
+  { id: 'yoga', label: 'Йога и дыхание' },
+  { id: 'ortho', label: 'Ортопедическая гимнастика' },
+  { id: 'any', label: 'Мне все равно — подбери сама' },
 ];
 
 const HEALTH_OPTIONS = [
@@ -30,16 +57,16 @@ const HEALTH_OPTIONS = [
   { id: 'knees', label: 'Проблемы с коленями' },
   { id: 'back', label: 'Проблемы со спиной' },
   { id: 'pressure', label: 'Высокое давление' },
+  { id: 'varicose', label: 'Варикоз' },
+  { id: 'neck', label: 'Проблемы с шеей' },
   { id: 'other', label: 'Другое' },
 ];
 
 function OptionCard({
-  emoji,
   label,
   selected,
   onClick,
 }: {
-  emoji: string;
   label: string;
   selected: boolean;
   onClick: () => void;
@@ -47,13 +74,12 @@ function OptionCard({
   return (
     <button
       onClick={onClick}
-      className={`w-full flex items-center gap-4 bg-white rounded-2xl p-4 border-2 transition-all ${
+      className={`w-full flex items-center bg-white rounded-2xl p-4 border-2 transition-all ${
         selected
           ? 'border-[#B5886A] bg-[#E8D5C4]/30'
           : 'border-transparent hover:border-[#E8D5C4]'
       }`}
     >
-      <span className="text-2xl shrink-0">{emoji}</span>
       <span className="text-[var(--text)] text-left text-sm font-medium">{label}</span>
     </button>
   );
@@ -104,10 +130,16 @@ export default function QuestionnaireScreen() {
 
   const [age, setAge] = useState(questionnaire.age ?? 45);
   const [goals, setGoals] = useState<string[]>(questionnaire.goals ?? []);
-  const [activity, setActivity] = useState(questionnaire.activityLevel ?? '');
+  const [fitnessLevel, setFitnessLevel] = useState(questionnaire.fitnessLevel ?? '');
   const [time, setTime] = useState(questionnaire.timeAvailable ?? 0);
+  const [foodPreferences, setFoodPreferences] = useState<string[]>(questionnaire.foodPreferences ?? []);
+  const [dailySchedule, setDailySchedule] = useState(questionnaire.dailySchedule ?? '');
+  const [trainingTypes, setTrainingTypes] = useState<string[]>(questionnaire.trainingTypes ?? []);
   const [health, setHealth] = useState<string[]>(questionnaire.healthRestrictions ?? []);
   const [otherText, setOtherText] = useState('');
+  const [height, setHeight] = useState<string>(questionnaire.measurements?.height?.toString() ?? '');
+  const [weight, setWeight] = useState<string>(questionnaire.measurements?.weight?.toString() ?? '');
+  const [waist, setWaist] = useState<string>(questionnaire.measurements?.waist?.toString() ?? '');
 
   // Telegram BackButton
   useEffect(() => {
@@ -134,18 +166,33 @@ export default function QuestionnaireScreen() {
     switch (step) {
       case 1: return true;
       case 2: return goals.length > 0;
-      case 3: return activity !== '';
+      case 3: return fitnessLevel !== '';
       case 4: return time > 0;
-      case 5: return true;
+      case 5: return foodPreferences.length > 0;
+      case 6: return dailySchedule !== '';
+      case 7: return trainingTypes.length > 0;
+      case 8: return true;
+      case 9: return true;
       default: return false;
     }
-  }, [step, goals, activity, time]);
+  }, [step, goals, fitnessLevel, time, foodPreferences, dailySchedule, trainingTypes]);
+
+  const savePartial = () => {
+    setQuestionnaire({
+      age,
+      goals,
+      fitnessLevel,
+      timeAvailable: time,
+      foodPreferences,
+      dailySchedule,
+      trainingTypes,
+    });
+  };
 
   const goNext = () => {
-    // Save partial data
-    setQuestionnaire({ age, goals, activityLevel: activity, timeAvailable: time });
+    savePartial();
 
-    if (step < 5) {
+    if (step < TOTAL_STEPS) {
       setDirection(1);
       setStep(step + 1);
     } else {
@@ -157,12 +204,22 @@ export default function QuestionnaireScreen() {
     const restrictions = health.includes('other')
       ? [...health.filter((h) => h !== 'other'), otherText].filter(Boolean)
       : health;
+
+    const measurements: { height?: number; weight?: number; waist?: number } = {};
+    if (height) measurements.height = Number(height);
+    if (weight) measurements.weight = Number(weight);
+    if (waist) measurements.waist = Number(waist);
+
     setQuestionnaire({
       age,
       goals,
-      activityLevel: activity,
+      fitnessLevel,
       timeAvailable: time,
+      foodPreferences,
+      dailySchedule,
+      trainingTypes,
       healthRestrictions: restrictions,
+      measurements: Object.keys(measurements).length > 0 ? measurements : undefined,
     });
     navigate('/generating');
   };
@@ -187,6 +244,32 @@ export default function QuestionnaireScreen() {
       return without.includes(id)
         ? without.filter((h) => h !== id)
         : [...without, id];
+    });
+  };
+
+  const toggleFood = (id: string) => {
+    if (id === 'no-restrictions') {
+      setFoodPreferences(['no-restrictions']);
+      return;
+    }
+    setFoodPreferences((prev) => {
+      const without = prev.filter((f) => f !== 'no-restrictions');
+      if (without.includes(id)) return without.filter((f) => f !== id);
+      if (without.length < 3) return [...without, id];
+      return without;
+    });
+  };
+
+  const toggleTraining = (id: string) => {
+    if (id === 'any') {
+      setTrainingTypes(['any']);
+      return;
+    }
+    setTrainingTypes((prev) => {
+      const without = prev.filter((t) => t !== 'any');
+      if (without.includes(id)) return without.filter((t) => t !== id);
+      if (without.length < 3) return [...without, id];
+      return without;
     });
   };
 
@@ -227,7 +310,6 @@ export default function QuestionnaireScreen() {
               {GOALS.map((g) => (
                 <OptionCard
                   key={g.id}
-                  emoji={g.emoji}
                   label={g.label}
                   selected={goals.includes(g.id)}
                   onClick={() => toggleGoal(g.id)}
@@ -241,16 +323,15 @@ export default function QuestionnaireScreen() {
         return (
           <div className="flex flex-col gap-4">
             <h2 className="font-[Cormorant_Garamond] text-3xl font-bold text-[var(--text)] text-center">
-              Как часто ты двигаешься?
+              Твой уровень подготовки
             </h2>
             <div className="flex flex-col gap-3">
-              {ACTIVITY_LEVELS.map((a) => (
+              {FITNESS_LEVELS.map((a) => (
                 <OptionCard
                   key={a.id}
-                  emoji={a.emoji}
                   label={a.label}
-                  selected={activity === a.id}
-                  onClick={() => setActivity(a.id)}
+                  selected={fitnessLevel === a.id}
+                  onClick={() => setFitnessLevel(a.id)}
                 />
               ))}
             </div>
@@ -267,7 +348,6 @@ export default function QuestionnaireScreen() {
               {TIME_OPTIONS.map((t) => (
                 <OptionCard
                   key={t.value}
-                  emoji={t.emoji}
                   label={t.label}
                   selected={time === t.value}
                   onClick={() => setTime(t.value)}
@@ -281,7 +361,66 @@ export default function QuestionnaireScreen() {
         return (
           <div className="flex flex-col gap-4">
             <h2 className="font-[Cormorant_Garamond] text-3xl font-bold text-[var(--text)] text-center">
-              Есть ли ограничения по здоровью?
+              Предпочтения в питании
+            </h2>
+            <p className="text-center text-sm text-[var(--text)] opacity-50">(выбери до 3)</p>
+            <div className="flex flex-col gap-3">
+              {FOOD_OPTIONS.map((f) => (
+                <CheckboxCard
+                  key={f.id}
+                  label={f.label}
+                  selected={foodPreferences.includes(f.id)}
+                  onClick={() => toggleFood(f.id)}
+                />
+              ))}
+            </div>
+          </div>
+        );
+
+      case 6:
+        return (
+          <div className="flex flex-col gap-4">
+            <h2 className="font-[Cormorant_Garamond] text-3xl font-bold text-[var(--text)] text-center">
+              Твой обычный режим дня
+            </h2>
+            <div className="flex flex-col gap-3">
+              {SCHEDULE_OPTIONS.map((s) => (
+                <OptionCard
+                  key={s.id}
+                  label={s.label}
+                  selected={dailySchedule === s.id}
+                  onClick={() => setDailySchedule(s.id)}
+                />
+              ))}
+            </div>
+          </div>
+        );
+
+      case 7:
+        return (
+          <div className="flex flex-col gap-4">
+            <h2 className="font-[Cormorant_Garamond] text-3xl font-bold text-[var(--text)] text-center">
+              Какие тренировки ближе
+            </h2>
+            <p className="text-center text-sm text-[var(--text)] opacity-50">(выбери до 3)</p>
+            <div className="flex flex-col gap-3">
+              {TRAINING_TYPE_OPTIONS.map((t) => (
+                <CheckboxCard
+                  key={t.id}
+                  label={t.label}
+                  selected={trainingTypes.includes(t.id)}
+                  onClick={() => toggleTraining(t.id)}
+                />
+              ))}
+            </div>
+          </div>
+        );
+
+      case 8:
+        return (
+          <div className="flex flex-col gap-4">
+            <h2 className="font-[Cormorant_Garamond] text-3xl font-bold text-[var(--text)] text-center">
+              Есть ли ограничения по здоровью
             </h2>
             <div className="flex flex-col gap-3">
               {HEALTH_OPTIONS.map((h) => (
@@ -311,13 +450,64 @@ export default function QuestionnaireScreen() {
             </div>
           </div>
         );
+
+      case 9:
+        return (
+          <div className="flex flex-col gap-6">
+            <div className="text-center">
+              <h2 className="font-[Cormorant_Garamond] text-3xl font-bold text-[var(--text)]">
+                Текущие параметры
+              </h2>
+              <p className="mt-2 text-sm text-[var(--text)] opacity-50">
+                Необязательно — поможет точнее подобрать план
+              </p>
+            </div>
+            <div className="flex flex-col gap-4">
+              <div>
+                <label className="block text-sm text-[var(--text)] opacity-70 mb-1">Рост (см)</label>
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  value={height}
+                  onChange={(e) => setHeight(e.target.value)}
+                  placeholder="165"
+                  className="w-full border border-[var(--secondary)] rounded-xl px-4 py-3 text-sm text-[var(--text)] bg-white focus:outline-none focus:border-[var(--primary)]"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-[var(--text)] opacity-70 mb-1">Вес (кг)</label>
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  value={weight}
+                  onChange={(e) => setWeight(e.target.value)}
+                  placeholder="70"
+                  className="w-full border border-[var(--secondary)] rounded-xl px-4 py-3 text-sm text-[var(--text)] bg-white focus:outline-none focus:border-[var(--primary)]"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-[var(--text)] opacity-70 mb-1">Объем талии (см)</label>
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  value={waist}
+                  onChange={(e) => setWaist(e.target.value)}
+                  placeholder="80"
+                  className="w-full border border-[var(--secondary)] rounded-xl px-4 py-3 text-sm text-[var(--text)] bg-white focus:outline-none focus:border-[var(--primary)]"
+                />
+              </div>
+            </div>
+          </div>
+        );
     }
   };
+
+  const isSkippableStep = step === 8 || step === 9;
 
   return (
     <div className="min-h-screen flex flex-col px-6 py-6 max-w-md mx-auto">
       <div className="mb-6">
-        <ProgressBar current={step} total={5} />
+        <ProgressBar current={step} total={TOTAL_STEPS} />
       </div>
 
       <div className="flex-1 flex flex-col overflow-hidden">
@@ -338,9 +528,9 @@ export default function QuestionnaireScreen() {
       </div>
 
       <div className="pt-6 flex flex-col gap-3">
-        {step === 5 && (
+        {isSkippableStep && (
           <button
-            onClick={finish}
+            onClick={goNext}
             className="text-[var(--text)] opacity-50 text-sm underline"
           >
             Пропустить
@@ -355,7 +545,7 @@ export default function QuestionnaireScreen() {
               : 'bg-[#E8D5C4] text-white opacity-50 cursor-not-allowed'
           }`}
         >
-          {step === 5 ? 'Готово' : 'Далее'}
+          {step === TOTAL_STEPS ? 'Готово' : 'Далее'}
         </button>
       </div>
     </div>

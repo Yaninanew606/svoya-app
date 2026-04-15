@@ -27,7 +27,9 @@ export function authMiddleware(req: Request, res: Response, next: NextFunction):
   }
 
   if (!initData) {
-    res.status(401).json({ error: 'No init data' });
+    // Demo mode — allow access without Telegram auth
+    req.telegramUser = { id: 12345, first_name: 'Demo' };
+    next();
     return;
   }
 

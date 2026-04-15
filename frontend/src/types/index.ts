@@ -1,9 +1,17 @@
 export interface QuestionnaireData {
   age: number;
   goals: string[];
-  activityLevel: string;
+  fitnessLevel: string;
   timeAvailable: number;
+  foodPreferences: string[];
+  dailySchedule: string;
+  trainingTypes: string[];
   healthRestrictions: string[];
+  measurements?: {
+    height?: number;
+    weight?: number;
+    waist?: number;
+  };
 }
 
 export interface Meal {
@@ -39,7 +47,7 @@ export interface Exercise {
 }
 
 export interface WorkoutPlan {
-  duration: 10 | 15 | 20 | 30;
+  duration: number;
   difficulty: 'easy' | 'medium' | 'hard';
   focus: string;
   phases: {
@@ -47,6 +55,16 @@ export interface WorkoutPlan {
     main: Exercise[];
     cooldown: Exercise[];
   };
+}
+
+export interface DaySchedule {
+  day: string;
+  type: 'strength' | 'cardio' | 'flexibility' | 'rest';
+  workout: WorkoutPlan | null;
+}
+
+export interface WeeklyWorkout {
+  schedule: DaySchedule[];
 }
 
 export interface DailyCheckin {
@@ -63,6 +81,7 @@ export interface PlanResponse {
   planId: string;
   nutrition: NutritionPlan;
   workout: WorkoutPlan;
+  weeklyWorkout?: WeeklyWorkout;
   message: string;
 }
 
