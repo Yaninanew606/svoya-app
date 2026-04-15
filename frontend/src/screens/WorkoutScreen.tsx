@@ -22,12 +22,6 @@ const MOBILITY_EXERCISES: Exercise[] = [
   { name: 'Перекаты стоп', duration: 45, description: 'Перекатывайся с носка на пятку и обратно. 15 раз.', isSkippable: false },
 ];
 
-const BREATHING_EXERCISES: Exercise[] = [
-  { name: 'Дыхание 4-7-8', duration: 60, description: 'Вдох на 4 счёта, задержка на 7, выдох на 8. Успокаивает нервную систему.', isSkippable: false },
-  { name: 'Диафрагмальное дыхание', duration: 60, description: 'Руки на животе. Вдох — живот надувается, выдох — втягивается. Грудь неподвижна.', isSkippable: false },
-  { name: 'Попеременное дыхание', duration: 60, description: 'Закрой правую ноздрю — вдох левой. Закрой левую — выдох правой. Чередуй.', isSkippable: false },
-];
-
 const REST_DAY_OPTIONS = [
   {
     id: 'yoga',
@@ -44,14 +38,6 @@ const REST_DAY_OPTIONS = [
     icon: RotateCcw,
     iconColor: 'text-amber-500',
     exercises: MOBILITY_EXERCISES,
-  },
-  {
-    id: 'breathing',
-    title: 'Дыхательная практика',
-    duration: '5 мин',
-    icon: Wind,
-    iconColor: 'text-blue-500',
-    exercises: BREATHING_EXERCISES,
   },
 ] as const;
 

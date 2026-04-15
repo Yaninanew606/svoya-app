@@ -71,79 +71,196 @@ function calculateCyclePhase(lastPeriodDate: string): CyclePhase {
   }
 }
 
-function buildMockWorkout(type: 'strength' | 'cardio' | 'flexibility', duration: number, difficulty: string) {
-  const workouts: Record<string, any> = {
-    strength: {
-      duration,
-      difficulty,
-      focus: "Силовая тренировка — укрепление мышц и осанка",
-      phases: {
-        warmup: [
-          { name: "Круговые движения плечами", duration: 60, description: "Медленные круговые движения плечами вперёд и назад. Расслабь шею.", modification: "Можно делать сидя", isSkippable: false },
-          { name: "Наклоны головы", duration: 45, description: "Плавные наклоны головы к каждому плечу, задержка 3 секунды.", modification: "Уменьши амплитуду при дискомфорте", isSkippable: false },
-          { name: "Марш на месте", duration: 60, description: "Шагай на месте, поднимая колени. Руки двигаются свободно.", modification: "Шагай медленнее, не поднимай колени высоко", isSkippable: false }
-        ],
-        main: [
-          { name: "Приседания у стены", reps: 10, sets: 2, description: "Прислонись спиной к стене, медленно приседай до угла 90°. Задержись на 2 секунды.", modification: "Приседай только до комфортного угла", isSkippable: false },
-          { name: "Выпады назад с опорой", reps: 8, sets: 2, description: "Держась за спинку стула, шагни назад и согни оба колена. Вернись в исходное положение.", modification: "Уменьши глубину выпада", isSkippable: false },
-          { name: "Отжимания от стены", reps: 10, sets: 2, description: "Встань лицом к стене на расстоянии вытянутой руки. Медленно сгибай и разгибай руки.", modification: "Подойди ближе к стене для меньшей нагрузки", isSkippable: true },
-          { name: "Ягодичный мост", reps: 12, sets: 2, description: "Ляг на спину, согни ноги. Поднимай таз вверх, сжимая ягодицы в верхней точке. Задержись на 2 секунды.", modification: "Поднимай таз невысоко, без прогиба в пояснице", isSkippable: false },
-          { name: "Подъём таза лёжа (по Бубновскому)", reps: 10, sets: 2, description: "Лёжа на спине, стопы на полу. Плавно поднимай таз, напрягая мышцы тазового дна и ягодиц.", modification: "Делай с меньшей амплитудой", isSkippable: true },
-          { name: "Планка на предплечьях", duration: 20, sets: 2, description: "Упор на предплечья и носки. Тело — прямая линия. Дыши ровно.", modification: "Планка с колен", isSkippable: true }
-        ],
-        cooldown: [
-          { name: "Растяжка задней поверхности бедра", duration: 45, description: "Сядь на пол, вытяни одну ногу. Мягко тянись к носку.", modification: "Слегка согни ногу в колене", isSkippable: false },
-          { name: "Укрепление мышц спины (по Бубновскому)", duration: 60, description: "Лёжа на животе, руки вдоль тела. Плавно приподнимай грудную клетку, не запрокидывая голову.", modification: "Приподнимай совсем немного, фокус на лопатках", isSkippable: false },
-          { name: "Глубокое дыхание", duration: 60, description: "Ляг на спину, руки вдоль тела. Вдох на 4 счёта, выдох на 6. Расслабляйся.", modification: "Можно делать сидя", isSkippable: false }
-        ]
+// ── Exercise Database ──
+
+const WARMUP_EXERCISES = [
+  { name: "Круговые движения шеей", duration: 30, description: "Медленные круговые движения головой по 5 раз в каждую сторону. Расслабь плечи.", modification: "Только наклоны вперёд-назад без полных кругов", isSkippable: false },
+  { name: "Вращения плечами", duration: 30, description: "Круговые движения плечами вперёд 10 раз, затем назад 10 раз.", modification: "Можно делать сидя", isSkippable: false },
+  { name: "Круговые движения руками", duration: 30, description: "Широкие круги прямыми руками вперёд и назад. Разогреваем плечевой пояс.", modification: "Маленькие круги при дискомфорте в плечах", isSkippable: false },
+  { name: "Повороты корпуса", duration: 30, description: "Ноги на ширине плеч, руки согнуты перед грудью. Плавные повороты влево-вправо.", modification: "Уменьши амплитуду поворота", isSkippable: false },
+  { name: "Круговые движения тазом", duration: 30, description: "Руки на поясе, описывай круги тазом. По 10 раз в каждую сторону.", modification: "Держись за стул для равновесия", isSkippable: false },
+  { name: "Наклоны вперёд-назад", duration: 30, description: "Ноги на ширине плеч, мягкие наклоны вперёд и лёгкий прогиб назад. Без рывков.", modification: "Наклоняйся только вперёд, неглубоко", isSkippable: false },
+  { name: "Вращения коленями", duration: 30, description: "Ноги вместе, слегка согнуты. Ладони на коленях, круговые движения.", modification: "Только полукруги вперёд", isSkippable: false },
+  { name: "Перекаты с пятки на носок", duration: 30, description: "Стоя, поднимайся на носки и перекатывайся на пятки. 15 раз.", modification: "Держись за опору", isSkippable: false },
+];
+
+const COOLDOWN_EXERCISES = [
+  { name: "Растяжка задней поверхности бедра", duration: 30, description: "Стоя, поставь пятку на невысокую опору. Мягко наклоняйся к ноге. Каждая сторона.", modification: "Слегка согни опорную ногу", isSkippable: false },
+  { name: "Растяжка передней поверхности бедра", duration: 30, description: "Стоя, согни ногу назад и возьмись за стопу. Держи колени вместе. Каждая сторона.", modification: "Держись за стену, тяни слегка", isSkippable: false },
+  { name: "Наклон к полу", duration: 30, description: "Ноги на ширине плеч, мягко наклонись вперёд, руки свисают к полу. Не пружинь.", modification: "Слегка согни колени", isSkippable: false },
+  { name: "Глубокое дыхание лёжа", duration: 60, description: "Ляг на спину, руки вдоль тела. Вдох на 4 счёта, выдох на 6. Полностью расслабься.", modification: "Можно делать сидя в кресле", isSkippable: false },
+  { name: "Потягивания лёжа", duration: 30, description: "Лёжа на спине, вытяни руки за голову и потянись всем телом. Задержись на 5 секунд, расслабься.", modification: "Тянись только руками, не напрягая поясницу", isSkippable: false },
+];
+
+const STRENGTH_UPPER = [
+  { name: "Отжимания от стены", reps: 12, sets: 3, restSeconds: 60, description: "Встань лицом к стене на расстоянии вытянутой руки. Медленно сгибай и разгибай руки.", modification: "Подойди ближе к стене для меньшей нагрузки", isSkippable: true },
+  { name: "Обратные отжимания от стула", reps: 10, sets: 3, restSeconds: 60, description: "Сядь на край стула, руки по бокам. Сдвинься вперёд и сгибай руки, опускаясь вниз. Выпрямляй руки.", modification: "Согни ноги ближе к себе для меньшей нагрузки", isSkippable: true },
+  { name: "Подъём рук с бутылками воды", reps: 12, sets: 3, restSeconds: 60, description: "Возьми бутылки 0.5–1 л. Руки вдоль тела, поднимай прямые руки перед собой до уровня плеч.", modification: "Используй пустые бутылки или без веса", isSkippable: true },
+  { name: "Планка на предплечьях", duration: 35, sets: 3, restSeconds: 60, description: "Упор на предплечья и носки. Тело — прямая линия от головы до пяток. Дыши ровно.", modification: "Планка с колен — упор на предплечья и колени", isSkippable: true },
+  { name: "Разведение рук в стороны (с бутылками)", reps: 12, sets: 3, restSeconds: 60, description: "Стоя, руки с бутылками вдоль тела. Поднимай прямые руки в стороны до уровня плеч, медленно опускай.", modification: "Поднимай руки только до половины амплитуды", isSkippable: true },
+  { name: "Жим вверх стоя (с бутылками)", reps: 10, sets: 3, restSeconds: 60, description: "Бутылки на уровне плеч. Выжимай руки вверх, полностью выпрямляя. Медленно опускай.", modification: "Делай сидя на стуле со спинкой", isSkippable: true },
+  { name: "Тяга к поясу в наклоне (с бутылками)", reps: 12, sets: 3, restSeconds: 60, description: "Наклонись вперёд с прямой спиной. Тяни бутылки к поясу, сводя лопатки. Медленно опускай.", modification: "Опирайся одной рукой на стул, тяни другой поочерёдно", isSkippable: true },
+];
+
+const STRENGTH_LOWER = [
+  { name: "Приседания с собственным весом", reps: 15, sets: 3, restSeconds: 60, description: "Ноги на ширине плеч, руки перед собой. Приседай до параллели бёдер с полом. Колени не выходят за носки.", modification: "Приседай до стула, не садясь полностью", isSkippable: true },
+  { name: "Выпады назад", reps: 10, sets: 3, restSeconds: 60, description: "Стоя прямо, шагни назад и согни оба колена до 90°. Вернись в исходное. Каждая нога.", modification: "Держись за спинку стула, уменьши глубину выпада", isSkippable: true },
+  { name: "Ягодичный мост", reps: 15, sets: 3, restSeconds: 60, description: "Лёжа на спине, стопы на полу. Поднимай таз вверх, сжимая ягодицы на 2 секунды в верхней точке.", modification: "Поднимай таз невысоко, без прогиба в пояснице", isSkippable: true },
+  { name: "Подъём на носки", reps: 20, sets: 3, restSeconds: 45, description: "Стоя, медленно поднимайся на носки, задержись на секунду наверху, опускайся.", modification: "Держись за стену, поднимайся невысоко", isSkippable: true },
+  { name: "Приседания-плие", reps: 12, sets: 3, restSeconds: 60, description: "Широкая стойка, носки развёрнуты наружу. Приседай, разводя колени в стороны. Спина прямая.", modification: "Приседай неглубоко, держись за опору", isSkippable: true },
+  { name: "Махи ногой назад (стоя у стены)", reps: 15, sets: 3, restSeconds: 45, description: "Держась за стену, отводи прямую ногу назад. Сжимай ягодицу в верхней точке. Каждая нога.", modification: "Уменьши амплитуду, слегка согни опорную ногу", isSkippable: true },
+  { name: "Подъём таза лёжа (по Бубновскому)", reps: 12, sets: 3, restSeconds: 60, description: "Лёжа на спине, стопы на полу. Плавно поднимай таз, напрягая мышцы тазового дна и ягодиц. Задержись на 3 секунды.", modification: "Поднимай с меньшей амплитудой, без задержки", isSkippable: true },
+  { name: "Разведение ног лёжа", reps: 15, sets: 3, restSeconds: 45, description: "Лёжа на спине, подними прямые ноги вверх. Разводи и своди ноги. Поясница прижата к полу.", modification: "Согни ноги в коленях, разводи согнутые", isSkippable: true },
+];
+
+const STRENGTH_CORE = [
+  { name: "Планка", duration: 35, sets: 3, restSeconds: 60, description: "Упор на предплечья и носки. Тело — прямая линия. Не прогибай поясницу. Дыши ровно.", modification: "Планка с колен", isSkippable: true },
+  { name: "Скручивания лёжа", reps: 15, sets: 3, restSeconds: 45, description: "Лёжа на спине, руки за головой. Поднимай лопатки от пола, напрягая пресс. Поясница прижата.", modification: "Руки вдоль тела, поднимай только голову и плечи", isSkippable: true },
+  { name: "Велосипед лёжа", reps: 20, sets: 3, restSeconds: 45, description: "Лёжа на спине, ноги подняты. Тяни правый локоть к левому колену, затем наоборот. Чередуй.", modification: "Работай только ногами без скручивания корпуса", isSkippable: true },
+  { name: "Подъём ног лёжа", reps: 12, sets: 3, restSeconds: 60, description: "Лёжа на спине, руки вдоль тела. Поднимай прямые ноги до 90° и медленно опускай, не касаясь пола.", modification: "Поднимай согнутые ноги, не опускай низко", isSkippable: true },
+  { name: "Боковая планка", duration: 20, sets: 2, restSeconds: 45, description: "Упор на предплечье и боковую стопу. Тело — прямая линия. Каждая сторона.", modification: "Боковая планка с колен", isSkippable: true },
+  { name: "Лодочка (по Бубновскому)", reps: 10, sets: 3, restSeconds: 60, description: "Лёжа на животе, руки вытянуты вперёд. Одновременно поднимай руки и ноги от пола. Задержись на 2 секунды.", modification: "Поднимай только руки ИЛИ только ноги поочерёдно", isSkippable: true },
+  { name: "Ножницы лёжа", reps: 15, sets: 3, restSeconds: 45, description: "Лёжа на спине, поднимай ноги на 30 см от пола. Делай перекрёстные махи как ножницы.", modification: "Подними ноги выше, подложи руки под поясницу", isSkippable: true },
+];
+
+const CARDIO_LOW_IMPACT = [
+  { name: "Марш на месте с высоким подъёмом колен", duration: 60, description: "Энергичный марш на месте, поднимая колени к животу. Работай руками в такт.", modification: "Шагай спокойнее, колени не выше удобного уровня", isSkippable: true },
+  { name: "Шаги в сторону с подъёмом рук", duration: 60, description: "Шагни вправо — руки вверх, приставь ногу — руки вниз. Чередуй стороны ритмично.", modification: "Не поднимай руки выше плеч", isSkippable: true },
+  { name: "Бег на месте (мягкий)", duration: 45, description: "Лёгкий бег на месте с мягким приземлением на носки. Руки согнуты, двигаются естественно.", modification: "Замени на быстрый марш на месте", isSkippable: true },
+  { name: "Прыжки на месте (степ-тач)", duration: 45, description: "Лёгкие прыжки с ноги на ногу, касаясь носком пола в стороне. Мягко пружинь.", modification: "Шаги в сторону без прыжков", isSkippable: true },
+  { name: "Удары руками стоя (бокс)", duration: 60, description: "Стоя в лёгкой стойке, выполняй поочерёдные удары руками вперёд. Корпус поворачивается за рукой.", modification: "Медленнее и без усилия, как разминка", isSkippable: true },
+  { name: "Скалолаз медленный", duration: 30, description: "В упоре лёжа подтягивай колени к груди поочерёдно. Темп умеренный, спина ровная.", modification: "Делай стоя, подтягивая колено к груди из положения стоя", isSkippable: true },
+  { name: "Подъём колена к локтю (крест-накрест)", duration: 45, description: "Стоя, поднимай правое колено к левому локтю и наоборот. Работай прессом при скручивании.", modification: "Не поднимай колено высоко, без скручивания", isSkippable: true },
+  { name: "Прыжки ноги вместе-врозь (jumping jacks)", duration: 30, description: "Прыжком расставь ноги в стороны, руки вверх. Прыжком — ноги вместе, руки вниз.", modification: "Шаги в стороны с подъёмом рук без прыжков", isSkippable: true },
+];
+
+const CARDIO_ACTIVE = [
+  { name: "Берпи модифицированный (без прыжка)", reps: 8, sets: 3, restSeconds: 60, description: "Присядь, поставь руки на пол, шагни ногами назад в планку, вернись шагом и встань.", modification: "Делай без выхода в планку — просто приседай и вставай", isSkippable: true },
+  { name: "Выпады с прыжком", reps: 10, sets: 3, restSeconds: 60, description: "Из выпада вперёд прыжком смени ноги в воздухе и приземлись в выпад на другую ногу.", modification: "Обычные выпады назад без прыжка, с опорой на стул", isSkippable: true },
+  { name: "Приседания с прыжком", reps: 10, sets: 3, restSeconds: 60, description: "Присядь и мощно выпрыгни вверх, мягко приземляясь на носки. Колени пружинят.", modification: "Обычные приседания с подъёмом на носки вместо прыжка", isSkippable: true },
+  { name: "Бег с захлёстом голени", duration: 45, sets: 3, restSeconds: 45, description: "Бег на месте с захлёстом пяток к ягодицам. Руки помогают движению.", modification: "Марш на месте, подтягивая пятку к ягодице руками", isSkippable: true },
+  { name: "Марш на месте с высоким подъёмом колен", duration: 60, description: "Энергичный марш с коленями к животу. Чередуй 15 сек быстро, 15 сек спокойно.", modification: "Обычный марш без ускорений", isSkippable: true },
+  { name: "Удары руками стоя (бокс)", duration: 60, description: "Интенсивные удары в быстром темпе с поворотом корпуса. Представь мешок перед собой.", modification: "Медленный темп, без напряжения", isSkippable: true },
+  { name: "Скалолаз быстрый", duration: 45, sets: 3, restSeconds: 45, description: "В упоре лёжа быстро подтягивай колени к груди поочерёдно. Держи корпус стабильным.", modification: "Медленный скалолаз или стоя с подъёмом колена", isSkippable: true },
+  { name: "Подъём колена к локтю (крест-накрест)", duration: 45, description: "Быстро поднимай правое колено к левому локтю и наоборот. Работай в интенсивном темпе.", modification: "Медленный темп без прыжков", isSkippable: true },
+];
+
+const FLEXIBILITY_YOGA = [
+  { name: "Поза ребёнка", duration: 45, description: "Сядь на пятки, вытяни руки вперёд, опусти лоб на пол. Дыши глубоко, расслабляй спину.", modification: "Подложи подушку под живот или между бёдрами и пятками", isSkippable: true },
+  { name: "Кошка-корова", duration: 60, description: "На четвереньках: вдох — прогибай спину вниз, выдох — округляй вверх. Медленно, с дыханием.", modification: "Уменьши амплитуду движений", isSkippable: true },
+  { name: "Собака мордой вниз", duration: 30, description: "Из положения на четвереньках выпрями ноги, подними таз вверх. Тело образует букву V. Тяни пятки к полу.", modification: "Согни колени, не опускай пятки до пола", isSkippable: true },
+  { name: "Поза голубя", duration: 30, description: "Одна нога согнута впереди, другая вытянута назад. Мягко опускайся корпусом вниз. Каждая сторона.", modification: "Делай лёжа на спине, закинув щиколотку на колено", isSkippable: true },
+  { name: "Наклон к прямым ногам сидя", duration: 45, description: "Сядь на пол, ноги вытянуты вперёд. Мягко тянись руками к стопам, спина ровная.", modification: "Слегка согни колени, используй ремень", isSkippable: true },
+  { name: "Скручивание лёжа", duration: 30, description: "Лёжа на спине, руки в стороны. Согнутые колени опусти вправо, голову влево. Каждая сторона.", modification: "Не опускай колени до пола, останавливайся в комфортной точке", isSkippable: true },
+  { name: "Поза бабочки", duration: 45, description: "Сядь, стопы вместе, колени в стороны. Мягко надавливай на колени, наклоняйся вперёд.", modification: "Подложи подушки под колени для поддержки", isSkippable: true },
+  { name: "Растяжка квадрицепса стоя", duration: 30, description: "Стоя, согни ногу назад и возьмись за стопу. Тяни пятку к ягодице, колени вместе. Каждая нога.", modification: "Держись за стену, тяни слегка", isSkippable: true },
+  { name: "Растяжка грудных в дверном проёме", duration: 30, description: "Встань в дверном проёме, руки на косяках на уровне плеч. Шагни вперёд, растягивая грудные мышцы.", modification: "Руки ниже уровня плеч, меньше шаг вперёд", isSkippable: true },
+  { name: "Растяжка шеи (наклоны)", duration: 30, description: "Наклони голову к правому плечу, задержись 15 сек. Повтори влево. Плечи расслаблены.", modification: "Уменьши наклон, не тяни рукой", isSkippable: true },
+];
+
+const FLEXIBILITY_BUBNOVSKY = [
+  { name: "Подъём таза лёжа (по Бубновскому)", reps: 12, sets: 3, restSeconds: 45, description: "Лёжа на спине, стопы на полу. Плавно поднимай таз, напрягая мышцы тазового дна и ягодиц. Задержка 3 секунды.", modification: "Поднимай с меньшей амплитудой, без задержки", isSkippable: true },
+  { name: "Разработка тазобедренных суставов лёжа", reps: 10, sets: 2, restSeconds: 45, description: "Лёжа на спине, согни ноги. Плавно описывай круги согнутой ногой. Каждая нога.", modification: "Уменьши амплитуду кругов", isSkippable: true },
+  { name: "Разведение коленей (бабочка) лёжа", reps: 15, sets: 2, restSeconds: 45, description: "Лёжа на спине, стопы вместе. Разводи колени в стороны как крылья бабочки и своди обратно.", modification: "Подложи валики под колени для поддержки", isSkippable: true },
+  { name: "Полумост с задержкой", reps: 10, sets: 3, restSeconds: 60, description: "Лёжа на спине, стопы на полу. Поднимай таз и задержись на 5 секунд в верхней точке. Медленно опускай.", modification: "Задержка 2 секунды, меньшая высота подъёма", isSkippable: true },
+  { name: "Скручивания для поясницы", reps: 10, sets: 2, restSeconds: 45, description: "Лёжа на спине, руки в стороны. Согнутые колени плавно опускай вправо-влево. Лопатки прижаты к полу.", modification: "Не опускай колени до пола", isSkippable: true },
+  { name: "Вытяжение позвоночника на полу", duration: 60, description: "Лёжа на спине, руки за головой. Тянись макушкой в одну сторону, пятками в другую. Вытягивай позвоночник.", modification: "Тяни только руки или только ноги поочерёдно", isSkippable: true },
+  { name: "Лодочка (по Бубновскому)", reps: 10, sets: 3, restSeconds: 60, description: "Лёжа на животе, руки вытянуты вперёд. Одновременно поднимай руки и ноги, задержись на 2 секунды.", modification: "Поднимай только руки ИЛИ только ноги поочерёдно", isSkippable: true },
+];
+
+function pickExercises(pool: any[], count: number): any[] {
+  if (pool.length <= count) return [...pool];
+  const result: any[] = [];
+  const indices = new Set<number>();
+  // Deterministic but varied: pick evenly spaced
+  const step = pool.length / count;
+  for (let i = 0; i < count; i++) {
+    const idx = Math.floor(i * step) % pool.length;
+    if (!indices.has(idx)) {
+      indices.add(idx);
+      result.push(pool[idx]);
+    }
+  }
+  // Fill if needed
+  for (let i = 0; result.length < count && i < pool.length; i++) {
+    if (!indices.has(i)) {
+      indices.add(i);
+      result.push(pool[i]);
+    }
+  }
+  return result;
+}
+
+function buildMockWorkout(type: 'strength' | 'cardio' | 'flexibility', duration: number, difficulty: string, dayIndex: number = 0) {
+  // Determine exercise counts based on duration
+  let warmupCount: number, mainCount: number, cooldownCount: number;
+  if (duration <= 15) {
+    warmupCount = 4; mainCount = 6; cooldownCount = 3;
+  } else if (duration <= 30) {
+    warmupCount = 5; mainCount = 8; cooldownCount = 3;
+  } else {
+    warmupCount = 5; mainCount = 10; cooldownCount = 4;
+  }
+
+  // Count strength days seen so far in the week (0-based dayIndex)
+  // We use dayIndex to rotate between sub-types
+  const strengthVariant = dayIndex % 3; // 0=upper, 1=lower, 2=core
+  const cardioVariant = dayIndex % 2;   // 0=low impact, 1=active
+  const flexVariant = dayIndex % 2;     // 0=yoga, 1=bubnovsky
+
+  let mainPool: any[];
+  let focus: string;
+
+  switch (type) {
+    case 'strength':
+      if (strengthVariant === 0) {
+        mainPool = STRENGTH_UPPER;
+        focus = "Силовая — верхняя часть тела (руки, плечи, грудь, спина)";
+      } else if (strengthVariant === 1) {
+        mainPool = STRENGTH_LOWER;
+        focus = "Силовая — нижняя часть тела (ноги, ягодицы)";
+      } else {
+        mainPool = STRENGTH_CORE;
+        focus = "Силовая — кор и спина (пресс, поясница)";
       }
-    },
-    cardio: {
-      duration,
-      difficulty,
-      focus: "Кардио — выносливость и хорошее настроение",
-      phases: {
-        warmup: [
-          { name: "Круговые движения руками", duration: 60, description: "Широкие круги руками вперёд и назад. Разогреваем плечевой пояс.", modification: "Маленькие круги при дискомфорте", isSkippable: false },
-          { name: "Повороты корпуса", duration: 45, description: "Ноги на ширине плеч, плавные повороты корпуса влево-вправо, руки расслаблены.", modification: "Уменьши амплитуду", isSkippable: false }
-        ],
-        main: [
-          { name: "Марш на месте с высоким подъёмом коленей", duration: 120, description: "Энергичный марш на месте, поднимая колени к животу. Работай руками.", modification: "Шагай спокойнее, колени не выше удобного уровня", isSkippable: false },
-          { name: "Степ-аэробика (ступенька или платформа)", duration: 120, description: "Шагай на ступеньку и обратно, чередуя ноги. Держи спину прямо.", modification: "Используй невысокую ступеньку, держись за опору", isSkippable: false },
-          { name: "Берпи модифицированный", reps: 6, sets: 2, description: "Присядь, поставь руки на пол, шагни (не прыгай) ногами назад в планку, вернись шагом и встань.", modification: "Делай без выхода в планку — просто приседай и вставай", isSkippable: true },
-          { name: "Ходьба с ускорением на месте", duration: 90, description: "Чередуй 20 секунд быстрого шага и 10 секунд медленного. Дыши ритмично.", modification: "Только спокойный шаг без ускорений", isSkippable: false },
-          { name: "Разработка тазобедренных суставов (по Бубновскому)", duration: 60, description: "Стоя, держась за опору, плавные круговые движения ногой в тазобедренном суставе.", modification: "Сидя на стуле, круги согнутой ногой", isSkippable: false }
-        ],
-        cooldown: [
-          { name: "Наклоны вперёд стоя", duration: 45, description: "Ноги на ширине плеч, мягко наклоняйся вперёд, руки свисают. Не пружинь.", modification: "Слегка согни колени", isSkippable: false },
-          { name: "Восстановление дыхания", duration: 60, description: "Руки вверх — вдох, руки вниз — выдох. Медленно, 8–10 раз.", modification: "Делай сидя", isSkippable: false }
-        ]
+      break;
+    case 'cardio':
+      if (cardioVariant === 0) {
+        mainPool = CARDIO_LOW_IMPACT;
+        focus = "Кардио — низкая ударность, выносливость";
+      } else {
+        mainPool = CARDIO_ACTIVE;
+        focus = "Кардио — активная тренировка, жиросжигание";
       }
-    },
-    flexibility: {
-      duration,
-      difficulty,
-      focus: "Гибкость и расслабление — забота о суставах и спине",
-      phases: {
-        warmup: [
-          { name: "Вращения в лучезапястных суставах", duration: 45, description: "Круговые движения кистями в обе стороны. Разогреваем мелкие суставы.", modification: "Делай медленнее", isSkippable: false },
-          { name: "Покачивания корпуса", duration: 60, description: "Стоя, ноги на ширине плеч, мягко покачивайся из стороны в сторону.", modification: "Держись за опору", isSkippable: false }
-        ],
-        main: [
-          { name: "Кошка-корова", duration: 60, sets: 3, description: "На четвереньках: прогибай и округляй спину. Медленно, с дыханием. Полезно для позвоночника.", modification: "Уменьши амплитуду движений", isSkippable: false },
-          { name: "Растяжка задней поверхности бедра сидя", duration: 45, sets: 2, description: "Сядь на пол, одна нога вытянута, вторая согнута. Тянись к носку вытянутой ноги.", modification: "Используй ремень или полотенце", isSkippable: false },
-          { name: "Наклоны в стороны стоя", reps: 10, sets: 2, description: "Одна рука вверх, другая вдоль тела. Плавный наклон в сторону, чувствуя вытяжение бока.", modification: "Меньше амплитуда, держись за стул", isSkippable: false },
-          { name: "Скручивания лёжа (ротация позвоночника)", duration: 45, sets: 2, description: "Лёжа на спине, руки в стороны. Согнутые колени опускай вправо-влево, плечи прижаты к полу.", modification: "Не опускай колени до пола, останавливайся в комфортной точке", isSkippable: false },
-          { name: "Поза ребёнка", duration: 60, description: "Сядь на пятки, вытяни руки вперёд, лоб на полу. Дыши глубоко, расслабляй спину.", modification: "Подложи подушку под живот", isSkippable: false },
-          { name: "Разработка тазобедренных суставов лёжа (по Бубновскому)", duration: 60, description: "Лёжа на спине, согни ноги. Разводи колени в стороны, как бабочка. Плавно, без рывков.", modification: "Подложи валики под колени для поддержки", isSkippable: false }
-        ],
-        cooldown: [
-          { name: "Шавасана (расслабление)", duration: 120, description: "Ляг на спину, закрой глаза. Расслабь все мышцы тела, дыши естественно. Побудь 2 минуты в тишине.", modification: "Подложи валик под колени при дискомфорте в пояснице", isSkippable: false }
-        ]
+      break;
+    case 'flexibility':
+      if (flexVariant === 0) {
+        mainPool = FLEXIBILITY_YOGA;
+        focus = "Гибкость — йога-позы, расслабление и растяжка";
+      } else {
+        mainPool = FLEXIBILITY_BUBNOVSKY;
+        focus = "Гибкость — ортопедические упражнения по Бубновскому";
       }
+      break;
+    default:
+      mainPool = STRENGTH_UPPER;
+      focus = "Общая тренировка";
+  }
+
+  // Rotate warmup pool start based on dayIndex so each day gets slightly different warmup
+  const rotatedWarmup = [...WARMUP_EXERCISES.slice(dayIndex % WARMUP_EXERCISES.length), ...WARMUP_EXERCISES.slice(0, dayIndex % WARMUP_EXERCISES.length)];
+  const rotatedCooldown = [...COOLDOWN_EXERCISES.slice(dayIndex % COOLDOWN_EXERCISES.length), ...COOLDOWN_EXERCISES.slice(0, dayIndex % COOLDOWN_EXERCISES.length)];
+
+  return {
+    duration,
+    difficulty,
+    focus,
+    phases: {
+      warmup: pickExercises(rotatedWarmup, warmupCount),
+      main: pickExercises(mainPool, mainCount),
+      cooldown: pickExercises(rotatedCooldown, cooldownCount),
     }
   };
-  return workouts[type];
 }
 
 function getScheduleForLevel(fitnessLevel: string): Array<{ day: string; type: 'strength' | 'cardio' | 'flexibility' | 'rest' }> {
@@ -638,7 +755,7 @@ function getMockPlan(params: {
   // Calculate cycle phase if lastPeriodDate provided
   const cyclePhase = params.lastPeriodDate ? calculateCyclePhase(params.lastPeriodDate) : null;
 
-  const schedule = scheduleTemplate.map(entry => {
+  const schedule = scheduleTemplate.map((entry, dayIndex) => {
     if (entry.type === 'rest') {
       return { day: entry.day, type: 'rest' as const, workout: null };
     }
@@ -666,7 +783,7 @@ function getMockPlan(params: {
     return {
       day: entry.day,
       type: adjustedType,
-      workout: buildMockWorkout(adjustedType, duration, adjustedDifficulty)
+      workout: buildMockWorkout(adjustedType, duration, adjustedDifficulty, dayIndex)
     };
   });
 
