@@ -719,6 +719,248 @@ function buildNutritionForPreferences(
   };
 }
 
+function adjustNutritionForCyclePhase(nutrition: any, phase: CyclePhase, foodPreferences: string[]): any {
+  const adjusted = JSON.parse(JSON.stringify(nutrition));
+  const noMeat = foodPreferences.includes('no_meat');
+
+  switch (phase.phase) {
+    case 'menstrual': {
+      // Iron-rich, warm, anti-inflammatory meals; +100-150 kcal
+      adjusted.meals.breakfast = {
+        name: 'Гречневая каша с бананом и тёмным шоколадом',
+        description: 'Тёплая гречка с бананом, грецкими орехами и кусочками тёмного шоколада. Богата железом и магнием — то, что нужно в первые дни цикла.',
+        calories: 420,
+        protein: 14,
+        ingredients: ['Гречневая крупа 80г', 'Банан 1 шт', 'Грецкие орехи 15г', 'Тёмный шоколад 10г', 'Корица по вкусу'],
+        alternatives: ['Овсянка с бананом и орехами', 'Каша из киноа с ягодами'],
+        prepTime: 12,
+        timing: adjusted.meals.breakfast.timing,
+      };
+
+      if (noMeat) {
+        adjusted.meals.lunch = {
+          name: 'Чечевичный суп с куркумой и имбирём',
+          description: 'Согревающий густой суп из красной чечевицы с куркумой и свежим имбирём. Отличный источник растительного железа и противовоспалительных специй.',
+          calories: 480,
+          protein: 22,
+          ingredients: ['Красная чечевица 100г', 'Морковь 1 шт', 'Лук 1 шт', 'Куркума 1 ч.л.', 'Имбирь свежий 10г', 'Оливковое масло 1 ст.л.', 'Шпинат 50г'],
+          alternatives: ['Суп из красной фасоли', 'Тыквенный крем-суп с чечевицей'],
+          prepTime: 25,
+          timing: adjusted.meals.lunch.timing,
+        };
+        adjusted.meals.dinner = {
+          name: 'Свекольный салат с грецким орехом и гранатом',
+          description: 'Тёплый салат из запечённой свёклы с гранатовыми зёрнами, грецкими орехами и шпинатом. Насыщен железом и витамином C для его усвоения.',
+          calories: 420,
+          protein: 12,
+          ingredients: ['Свёкла 200г', 'Гранат 80г', 'Грецкие орехи 30г', 'Шпинат 60г', 'Оливковое масло 1 ст.л.', 'Лимонный сок 1 ч.л.'],
+          alternatives: ['Тушёные овощи с красной фасолью', 'Гречка с тушёным шпинатом'],
+          prepTime: 30,
+          timing: adjusted.meals.dinner.timing,
+        };
+      } else {
+        adjusted.meals.lunch = {
+          name: 'Чечевичный суп с куркумой и имбирём',
+          description: 'Согревающий густой суп из красной чечевицы с куркумой и свежим имбирём. Можно добавить кусочки индейки для дополнительного белка.',
+          calories: 500,
+          protein: 28,
+          ingredients: ['Красная чечевица 80г', 'Индейка филе 80г', 'Морковь 1 шт', 'Куркума 1 ч.л.', 'Имбирь свежий 10г', 'Оливковое масло 1 ст.л.', 'Шпинат 50г'],
+          alternatives: ['Суп с говядиной и чечевицей', 'Рыбный суп с имбирём'],
+          prepTime: 30,
+          timing: adjusted.meals.lunch.timing,
+        };
+        adjusted.meals.dinner = {
+          name: 'Свекольный салат с грецким орехом и запечённой рыбой',
+          description: 'Запечённая свёкла с гранатом, грецкими орехами и кусочком лосося — идеальное сочетание железа и омега-3 жирных кислот.',
+          calories: 460,
+          protein: 26,
+          ingredients: ['Свёкла 200г', 'Лосось 100г', 'Гранат 60г', 'Грецкие орехи 20г', 'Шпинат 50г', 'Оливковое масло 1 ст.л.'],
+          alternatives: ['Тушёная говядина с гречкой', 'Рыба на пару со свёклой'],
+          prepTime: 35,
+          timing: adjusted.meals.dinner.timing,
+        };
+      }
+
+      if (adjusted.meals.snack) {
+        adjusted.meals.snack = {
+          ...adjusted.meals.snack,
+          name: 'Банан с тёмным шоколадом и орехами',
+          description: 'Банан с парой долек тёмного шоколада и миндалём. Магний поможет снять спазмы.',
+          calories: 200,
+          protein: 5,
+          ingredients: ['Банан 1 шт', 'Тёмный шоколад 15г', 'Миндаль 10г'],
+        };
+      }
+
+      adjusted.totalCalories = (adjusted.totalCalories || 1750) + 120;
+      adjusted.cycleNote = 'Менструальная фаза: меню обогащено железом (гречка, чечевица, свёкла, гранат), магнием и противовоспалительными продуктами. Калорийность немного увеличена.';
+      break;
+    }
+
+    case 'follicular': {
+      // Fresh, protein-rich, fermented foods
+      adjusted.meals.breakfast = {
+        name: noMeat ? 'Смузи-боул с ягодами и гранолой' : 'Омлет с овощами и кефир',
+        description: noMeat
+          ? 'Густой смузи из ягод и банана, украшенный гранолой, семенами чиа и свежими ягодами. Лёгкий и энергичный старт дня.'
+          : 'Пышный омлет с помидорами, шпинатом и болгарским перцем. Стакан кефира для пищеварения.',
+        calories: 380,
+        protein: noMeat ? 12 : 24,
+        ingredients: noMeat
+          ? ['Банан 1 шт', 'Голубика 80г', 'Малина 50г', 'Гранола 30г', 'Семена чиа 1 ст.л.', 'Растительное молоко 100мл']
+          : ['Яйца 3 шт', 'Помидор 1 шт', 'Шпинат 40г', 'Перец болгарский 0.5 шт', 'Кефир 200мл'],
+        alternatives: noMeat ? ['Овсянка с ягодами', 'Тост с авокадо'] : ['Творог с ягодами', 'Гречка с яйцом'],
+        prepTime: noMeat ? 8 : 12,
+        timing: adjusted.meals.breakfast.timing,
+      };
+
+      adjusted.meals.lunch = {
+        name: noMeat ? 'Салат с киноа, авокадо и квашеной капустой' : 'Куриная грудка с киноа и свежим салатом',
+        description: noMeat
+          ? 'Свежий салат из киноа, авокадо, огурца, помидоров и порции квашеной капусты. Ферментированные продукты поддержат микробиом.'
+          : 'Запечённая куриная грудка с киноа, свежими овощами и ложкой квашеной капусты.',
+        calories: 480,
+        protein: noMeat ? 16 : 35,
+        ingredients: noMeat
+          ? ['Киноа 80г', 'Авокадо 0.5 шт', 'Огурец 1 шт', 'Помидоры черри 80г', 'Квашеная капуста 50г', 'Оливковое масло 1 ст.л.', 'Лимонный сок']
+          : ['Куриная грудка 150г', 'Киноа 70г', 'Огурец 1 шт', 'Помидор 1 шт', 'Квашеная капуста 40г', 'Оливковое масло 1 ст.л.'],
+        alternatives: noMeat ? ['Бурый рис с овощами', 'Салат с бататом'] : ['Индейка с бурым рисом', 'Рыба с овощами'],
+        prepTime: noMeat ? 20 : 25,
+        timing: adjusted.meals.lunch.timing,
+      };
+
+      adjusted.meals.dinner = {
+        name: noMeat ? 'Батат запечённый с кефирным соусом и зеленью' : 'Рыба на гриле с бататом и овощами',
+        description: noMeat
+          ? 'Сладкий батат, запечённый до мягкости, с соусом из кефира и свежей зелени. Подаётся со свежим салатом.'
+          : 'Филе трески на гриле с запечённым бататом и свежими овощами. Лёгкий и сытный ужин.',
+        calories: 430,
+        protein: noMeat ? 10 : 28,
+        ingredients: noMeat
+          ? ['Батат 200г', 'Кефир 100мл', 'Зелень (укроп, петрушка)', 'Огурец 1 шт', 'Оливковое масло 1 ч.л.']
+          : ['Треска 150г', 'Батат 150г', 'Брокколи 100г', 'Лимон', 'Оливковое масло 1 ст.л.'],
+        alternatives: noMeat ? ['Овощное рагу с киноа', 'Фаршированный перец с рисом'] : ['Курица с овощами', 'Индейка с гречкой'],
+        prepTime: 30,
+        timing: adjusted.meals.dinner.timing,
+      };
+
+      adjusted.cycleNote = 'Фолликулярная фаза: меню с акцентом на свежие продукты, белок и ферментированные продукты. Энергия на подъёме — идеальное время для интенсивных тренировок!';
+      break;
+    }
+
+    case 'ovulation': {
+      // Light, anti-inflammatory, fiber-rich (cruciferous)
+      const breakfastCal = Math.round((adjusted.totalCalories || 1750) * 0.22);
+
+      adjusted.meals.breakfast = {
+        name: 'Смузи с зеленью и ягодами',
+        description: 'Лёгкий зелёный смузи со шпинатом, бананом, голубикой и семенами льна. Освежает и не перегружает пищеварение.',
+        calories: 320,
+        protein: 10,
+        ingredients: ['Шпинат 60г', 'Банан 1 шт', 'Голубика 80г', 'Семена льна 1 ст.л.', 'Вода или растительное молоко 200мл'],
+        alternatives: ['Йогурт с ягодами', 'Фруктовый салат с орехами'],
+        prepTime: 5,
+        timing: adjusted.meals.breakfast.timing,
+      };
+
+      adjusted.meals.lunch = {
+        name: noMeat ? 'Киноа с брокколи и цветной капустой' : 'Лосось на пару с брокколи и киноа',
+        description: noMeat
+          ? 'Киноа с запечёнными брокколи и цветной капустой, заправленная лимонным соком. Крестоцветные помогают метаболизму эстрогена.'
+          : 'Нежный лосось на пару с брокколи и киноа. Омега-3 и клетчатка в одном блюде.',
+        calories: 440,
+        protein: noMeat ? 16 : 32,
+        ingredients: noMeat
+          ? ['Киноа 80г', 'Брокколи 120г', 'Цветная капуста 100г', 'Лимонный сок', 'Оливковое масло 1 ст.л.', 'Семена тыквы 15г']
+          : ['Лосось 150г', 'Брокколи 120г', 'Киноа 60г', 'Лимон', 'Оливковое масло 1 ст.л.'],
+        alternatives: noMeat ? ['Овощной салат с тофу', 'Цветная капуста на гриле'] : ['Треска с овощами', 'Куриная грудка с капустой'],
+        prepTime: noMeat ? 25 : 20,
+        timing: adjusted.meals.lunch.timing,
+      };
+
+      adjusted.meals.dinner = {
+        name: noMeat ? 'Салат из капусты с авокадо и ягодами' : 'Лёгкий салат с курицей и крестоцветными',
+        description: noMeat
+          ? 'Хрустящий салат из молодой капусты, авокадо, голубики и грецких орехов с лёгкой заправкой.'
+          : 'Салат из пекинской капусты с куриной грудкой, авокадо и ягодами. Лёгкий ужин для фазы овуляции.',
+        calories: 380,
+        protein: noMeat ? 8 : 26,
+        ingredients: noMeat
+          ? ['Капуста молодая 150г', 'Авокадо 0.5 шт', 'Голубика 50г', 'Грецкие орехи 20г', 'Оливковое масло 1 ст.л.', 'Лимонный сок']
+          : ['Куриная грудка 120г', 'Капуста пекинская 150г', 'Авокадо 0.5 шт', 'Голубика 40г', 'Оливковое масло 1 ст.л.'],
+        alternatives: noMeat ? ['Рагу из кабачков и брокколи', 'Суп-пюре из цветной капусты'] : ['Рыба с салатом', 'Индейка с овощами'],
+        prepTime: 15,
+        timing: adjusted.meals.dinner.timing,
+      };
+
+      adjusted.totalCalories = Math.round((adjusted.totalCalories || 1750) * 0.95);
+      adjusted.cycleNote = 'Овуляция: лёгкое меню с акцентом на крестоцветные овощи (брокколи, капуста), ягоды и противовоспалительные продукты. Калорийность чуть снижена.';
+      break;
+    }
+
+    case 'luteal': {
+      // Comfort food, serotonin-boosting, more calories, magnesium + B6
+      adjusted.meals.breakfast = {
+        name: 'Овсянка с бананом, орехами и тёмным шоколадом',
+        description: 'Тёплая овсяная каша с бананом, миндалём, кешью и стружкой тёмного шоколада. Поднимает серотонин и настроение.',
+        calories: 450,
+        protein: 14,
+        ingredients: ['Овсяные хлопья 70г', 'Банан 1 шт', 'Миндаль 15г', 'Кешью 10г', 'Тёмный шоколад 15г', 'Молоко или растительное молоко 200мл'],
+        alternatives: ['Гранола с йогуртом и бананом', 'Блинчики из овсянки с ягодами'],
+        prepTime: 10,
+        timing: adjusted.meals.breakfast.timing,
+      };
+
+      adjusted.meals.lunch = {
+        name: noMeat ? 'Тёплый салат с бататом, авокадо и семечками' : 'Индейка с бурым рисом и авокадо',
+        description: noMeat
+          ? 'Запечённый батат с авокадо, тыквенными семечками и листьями шпината. Сложные углеводы и здоровые жиры помогут справиться с тягой к сладкому.'
+          : 'Филе индейки с бурым рисом, авокадо и шпинатом. Триптофан из индейки поддержит уровень серотонина.',
+        calories: 520,
+        protein: noMeat ? 14 : 34,
+        ingredients: noMeat
+          ? ['Батат 200г', 'Авокадо 0.5 шт', 'Тыквенные семечки 20г', 'Шпинат 60г', 'Оливковое масло 1 ст.л.', 'Лимонный сок']
+          : ['Индейка филе 150г', 'Бурый рис 80г', 'Авокадо 0.5 шт', 'Шпинат 50г', 'Оливковое масло 1 ст.л.'],
+        alternatives: noMeat ? ['Чечевица с бататом', 'Овощной карри с рисом'] : ['Курица с гречкой', 'Рыба с бурым рисом'],
+        prepTime: 30,
+        timing: adjusted.meals.lunch.timing,
+      };
+
+      adjusted.meals.dinner = {
+        name: noMeat ? 'Овощное рагу с нутом и авокадо' : 'Запечённый лосось с овощами и оливковым маслом',
+        description: noMeat
+          ? 'Густое овощное рагу с нутом, подаётся с ломтиками авокадо. Магний и B6 из нута помогут снизить симптомы ПМС.'
+          : 'Лосось, запечённый с кабачками и помидорами. Здоровые жиры и магний для лютеиновой фазы.',
+        calories: 480,
+        protein: noMeat ? 18 : 30,
+        ingredients: noMeat
+          ? ['Нут 100г', 'Кабачок 150г', 'Помидоры 100г', 'Авокадо 0.5 шт', 'Лук 1 шт', 'Чеснок 2 зубчика', 'Оливковое масло 1 ст.л.']
+          : ['Лосось 150г', 'Кабачок 150г', 'Помидоры 100г', 'Оливковое масло 1 ст.л.', 'Чеснок 2 зубчика', 'Лимон'],
+        alternatives: noMeat ? ['Карри из чечевицы', 'Фаршированные перцы с рисом'] : ['Треска с овощами', 'Куриные котлеты с пюре'],
+        prepTime: 35,
+        timing: adjusted.meals.dinner.timing,
+      };
+
+      if (adjusted.meals.snack) {
+        adjusted.meals.snack = {
+          ...adjusted.meals.snack,
+          name: 'Авокадо-тост с семечками',
+          description: 'Тост с авокадо, тыквенными семечками и щепоткой морской соли. B6 и магний против ПМС.',
+          calories: 230,
+          protein: 6,
+          ingredients: ['Цельнозерновой хлеб 1 ломтик', 'Авокадо 0.5 шт', 'Тыквенные семечки 10г', 'Морская соль'],
+        };
+      }
+
+      adjusted.totalCalories = (adjusted.totalCalories || 1750) + 170;
+      adjusted.cycleNote = 'Лютеиновая фаза: меню с акцентом на сложные углеводы, здоровые жиры и продукты, повышающие серотонин. Калорийность увеличена — организм сжигает больше энергии.';
+      break;
+    }
+  }
+
+  return adjusted;
+}
+
 function getMockPlan(params: {
   age: number;
   goals: string[];
@@ -748,12 +990,16 @@ function getMockPlan(params: {
   };
   const difficulty = params.difficulty || difficultyMap[fitnessLevel] || 'medium';
 
-  const nutrition = buildNutritionForPreferences(foodPreferences, dailySchedule, params.measurements, params.nutritionMode);
-
-  const scheduleTemplate = getScheduleForLevel(fitnessLevel);
+  let nutrition = buildNutritionForPreferences(foodPreferences, dailySchedule, params.measurements, params.nutritionMode);
 
   // Calculate cycle phase if lastPeriodDate provided
   const cyclePhase = params.lastPeriodDate ? calculateCyclePhase(params.lastPeriodDate) : null;
+
+  if (cyclePhase) {
+    nutrition = adjustNutritionForCyclePhase(nutrition, cyclePhase, foodPreferences);
+  }
+
+  const scheduleTemplate = getScheduleForLevel(fitnessLevel);
 
   const schedule = scheduleTemplate.map((entry, dayIndex) => {
     if (entry.type === 'rest') {

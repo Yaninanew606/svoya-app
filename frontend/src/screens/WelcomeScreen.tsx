@@ -4,80 +4,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, ClipboardList, Heart } from 'lucide-react';
 import { useAppStore } from '../stores/appStore';
 
-/* Brand logo — matching banner exactly: thick warm rings, glow, leaf */
-function BrandLogo() {
-  return (
-    <motion.div
-      initial={{ scale: 0.8, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      transition={{ duration: 0.8, ease: 'easeOut' }}
-      className="relative flex items-center justify-center"
-      style={{ width: 160, height: 160 }}
-    >
-      <style>{`
-        @keyframes logo-cw { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }
-        @keyframes logo-ccw { from { transform: rotate(360deg) } to { transform: rotate(0deg) } }
-        .ring-outer { animation: logo-cw 25s linear infinite; }
-        .ring-inner { animation: logo-ccw 35s linear infinite; }
-      `}</style>
-
-      {/* Glow — warm ambient light */}
-      <div
-        className="absolute rounded-full"
-        style={{
-          width: 150,
-          height: 150,
-          background: 'radial-gradient(circle, rgba(181,136,106,0.35) 0%, rgba(232,213,196,0.15) 40%, transparent 70%)',
-        }}
-      />
-
-      {/* Outer ring — rotating */}
-      <div className="absolute ring-outer" style={{ width: 130, height: 130 }}>
-        <div className="w-full h-full rounded-full" style={{ border: '2.5px solid rgba(196,153,111,0.5)' }} />
-      </div>
-
-      {/* Inner ring — counter-rotating */}
-      <div className="absolute ring-inner" style={{ width: 100, height: 100 }}>
-        <div className="w-full h-full rounded-full" style={{ border: '3px solid #B5886A' }} />
-      </div>
-
-      {/* Leaf — positioned lower-right inside ring, like on banner */}
-      <svg
-        width="45"
-        height="45"
-        viewBox="0 0 45 45"
-        fill="none"
-        className="absolute"
-        style={{ bottom: 35, right: 35 }}
-      >
-        <path
-          d="M15 38 C15 38 6 24 18 13 C28 4 36 15 36 15 C36 15 28 32 18 35 C15 36 15 38 15 38 Z"
-          stroke="#B5886A"
-          strokeWidth="2"
-          fill="none"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M18 34 Q24 24 25 14"
-          stroke="#B5886A"
-          strokeWidth="1.5"
-          fill="none"
-          opacity="0.4"
-          strokeLinecap="round"
-        />
-      </svg>
-    </motion.div>
-  );
-}
-
 function HowItWorksModal({ onClose }: { onClose: () => void }) {
   const [slide, setSlide] = useState(0);
 
   const slides = [
-    { num: '1', icon: MessageCircle, text: 'Ответь на 5 вопросов \u2192 я пойму твой ритм жизни' },
-    { num: '2', icon: ClipboardList, text: 'Получи план питания и тренировки на каждый день' },
-    { num: '3', icon: Heart, text: 'Я буду адаптировать план под твоё самочувствие' },
+    { icon: MessageCircle, text: 'Ответь на несколько вопросов — я пойму твой ритм жизни, цикл и предпочтения в еде' },
+    { icon: ClipboardList, text: 'Получи план тренировок и питания, адаптированный под фазу цикла и интервальное голодание' },
+    { icon: Heart, text: 'Каждый день я подстраиваю нагрузку и рецепты под твоё самочувствие' },
   ];
 
   return (
@@ -95,10 +28,7 @@ function HowItWorksModal({ onClose }: { onClose: () => void }) {
         exit={{ scale: 0.9, opacity: 0 }}
         onClick={(e) => e.stopPropagation()}
       >
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-[var(--text)] opacity-40 hover:opacity-80 text-xl"
-        >
+        <button onClick={onClose} className="absolute top-4 right-4 text-[var(--text)] opacity-40 hover:opacity-80 text-xl">
           ✕
         </button>
 
@@ -129,29 +59,18 @@ function HowItWorksModal({ onClose }: { onClose: () => void }) {
 
         <div className="flex justify-center gap-2 mt-6 mb-4">
           {slides.map((_, i) => (
-            <div
-              key={i}
-              className={`w-2 h-2 rounded-full transition-colors ${
-                i === slide ? 'bg-[var(--primary)]' : 'bg-[var(--secondary)]'
-              }`}
-            />
+            <div key={i} className={`w-2 h-2 rounded-full transition-colors ${i === slide ? 'bg-[var(--primary)]' : 'bg-[var(--secondary)]'}`} />
           ))}
         </div>
 
         <div className="flex justify-center gap-3">
           {slide < slides.length - 1 ? (
-            <button
-              onClick={() => setSlide(slide + 1)}
-              className="bg-[var(--primary)] text-white rounded-2xl px-6 py-3 text-sm font-semibold"
-            >
+            <button onClick={() => setSlide(slide + 1)} className="bg-[var(--primary)] text-white rounded-2xl px-6 py-3 text-sm font-semibold">
               Далее
             </button>
           ) : (
-            <button
-              onClick={onClose}
-              className="bg-[var(--primary)] text-white rounded-2xl px-6 py-3 text-sm font-semibold"
-            >
-              Понятно!
+            <button onClick={onClose} className="bg-[var(--primary)] text-white rounded-2xl px-6 py-3 text-sm font-semibold">
+              Понятно
             </button>
           )}
         </div>
@@ -167,11 +86,9 @@ export default function WelcomeScreen() {
 
   const handleReset = () => {
     clearAll();
-    // Remove Zustand persisted store before reload
     localStorage.removeItem('wellness-app-store');
-    // Remove all app data
     for (const key of Object.keys(localStorage)) {
-      if (key.startsWith('wellness') || key.startsWith('food-diary') || key.startsWith('water-') || key.startsWith('pelvic-floor')) {
+      if (key.startsWith('wellness') || key.startsWith('food-diary') || key.startsWith('water-') || key.startsWith('pelvic-floor') || key.startsWith('fasting') || key.startsWith('tg_')) {
         localStorage.removeItem(key);
       }
     }
@@ -179,48 +96,102 @@ export default function WelcomeScreen() {
   };
 
   useEffect(() => {
-    try {
-      window.Telegram?.WebApp?.expand();
-    } catch {}
+    try { window.Telegram?.WebApp?.expand(); } catch {}
   }, []);
 
   return (
     <motion.div
-      className="min-h-screen flex flex-col items-center justify-center px-6 py-12 max-w-md mx-auto"
-      initial={{ opacity: 0, y: 30 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, ease: 'easeOut' }}
+      className="min-h-screen flex flex-col items-center justify-center px-6 py-12"
+      style={{ background: 'linear-gradient(180deg, #1A1A1A 0%, #2A2420 100%)' }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.6 }}
     >
-      <div className="text-center flex flex-col items-center gap-5">
-        <BrandLogo />
+      <div className="text-center flex flex-col items-center gap-5 max-w-sm">
 
-        <h1 className="font-[Cormorant_Garamond] text-4xl font-bold text-[var(--text)]">
+        {/* Animated logo */}
+        <div className="relative flex items-center justify-center" style={{ width: 160, height: 160 }}>
+          <style>{`
+            @keyframes ring-cw { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }
+            @keyframes ring-ccw { from { transform: rotate(360deg) } to { transform: rotate(0deg) } }
+            @keyframes glow-pulse { 0%,100% { opacity: 0.3 } 50% { opacity: 0.5 } }
+          `}</style>
+
+          {/* Pulsing glow */}
+          <div
+            className="absolute rounded-full"
+            style={{
+              width: 150, height: 150,
+              background: 'radial-gradient(circle, rgba(212,168,130,0.4) 0%, rgba(181,136,106,0.15) 45%, transparent 70%)',
+              animation: 'glow-pulse 4s ease-in-out infinite',
+            }}
+          />
+
+          {/* Outer ring — golden, rotating */}
+          <div className="absolute" style={{ width: 135, height: 135, animation: 'ring-cw 20s linear infinite' }}>
+            <div className="w-full h-full rounded-full" style={{ border: '2px solid rgba(232,213,196,0.5)' }} />
+          </div>
+
+          {/* Inner ring — brighter, counter-rotating */}
+          <div className="absolute" style={{ width: 105, height: 105, animation: 'ring-ccw 28s linear infinite' }}>
+            <div className="w-full h-full rounded-full" style={{ border: '2.5px solid #C4996F' }} />
+          </div>
+
+          {/* Leaf */}
+          <svg width="48" height="48" viewBox="0 0 48 48" fill="none" className="relative z-10">
+            <path
+              d="M18 40 C18 40 8 26 20 14 C30 4 38 16 38 16 C38 16 30 34 20 37 C17 38 18 40 18 40 Z"
+              stroke="#C4996F"
+              strokeWidth="2"
+              fill="none"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M20 36 Q26 26 27 16"
+              stroke="#C4996F"
+              strokeWidth="1.5"
+              fill="none"
+              opacity="0.4"
+              strokeLinecap="round"
+            />
+          </svg>
+        </div>
+
+        {/* App name */}
+        <h1 className="font-[Cormorant_Garamond] text-4xl font-bold text-white tracking-wide">
           Своя
         </h1>
 
-        <p className="text-[var(--text)] opacity-60 text-sm leading-relaxed max-w-xs">
+        {/* Tagline */}
+        <p className="text-gray-400 text-sm leading-relaxed max-w-xs">
           Питание и тренировки, которые понимают твой возраст
         </p>
 
-        <button
+        {/* CTA button */}
+        <motion.button
+          whileTap={{ scale: 0.97 }}
           onClick={() => navigate(isReturningUser ? '/nutrition' : '/questionnaire')}
-          className="bg-[#B5886A] text-white rounded-2xl px-8 py-4 text-lg font-semibold shadow-md hover:opacity-90 transition-opacity mt-4"
+          className="rounded-2xl px-10 py-4 text-lg font-semibold shadow-lg mt-4"
+          style={{
+            background: 'linear-gradient(135deg, #B5886A, #D4A882)',
+            color: 'white',
+          }}
         >
           {isReturningUser ? 'Продолжить' : 'Начать'}
-        </button>
+        </motion.button>
 
+        {/* How it works */}
         <button
           onClick={() => setShowModal(true)}
-          className="text-[var(--primary)] text-sm underline underline-offset-4 opacity-70 hover:opacity-100 transition-opacity"
+          className="text-gray-500 text-sm underline underline-offset-4 hover:text-gray-300 transition-colors"
         >
           Как это работает
         </button>
 
+        {/* Reset button */}
         {isReturningUser && (
-          <button
-            onClick={handleReset}
-            className="text-gray-400 text-xs mt-4"
-          >
+          <button onClick={handleReset} className="text-gray-600 text-xs mt-2">
             Начать заново
           </button>
         )}
