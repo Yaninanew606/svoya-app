@@ -44,6 +44,8 @@ export interface Exercise {
   description: string;
   modification?: string;
   isSkippable: boolean;
+  image?: string;
+  muscleGroup?: string;
 }
 
 export interface WorkoutPlan {
