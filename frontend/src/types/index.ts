@@ -83,12 +83,22 @@ export interface DailyCheckin {
   overallStatus: 'good' | 'hard-day' | 'need-easier';
 }
 
+export interface CyclePhase {
+  phase: 'menstrual' | 'follicular' | 'ovulation' | 'luteal';
+  day: number;
+  name: string;
+  recommendation: string;
+  intensity: 'light' | 'medium' | 'high';
+  avoid: string;
+}
+
 export interface PlanResponse {
   planId: string;
   nutrition: NutritionPlan;
   workout: WorkoutPlan;
   weeklyWorkout?: WeeklyWorkout;
   message: string;
+  cyclePhase?: CyclePhase | null;
 }
 
 export interface CheckinResponse {

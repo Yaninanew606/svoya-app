@@ -44,6 +44,7 @@ planRoutes.post('/generate-plan', async (req, res) => {
       measurements: q.measurements,
       nutritionMode: preferences?.nutritionMode,
       difficulty: preferences?.difficulty || user.difficulty,
+      lastPeriodDate: q.lastPeriodDate,
     });
 
     // Save plan to DB
@@ -71,6 +72,7 @@ planRoutes.post('/generate-plan', async (req, res) => {
       workout: plan.workout,
       weeklyWorkout: plan.weeklyWorkout,
       message: plan.message,
+      cyclePhase: plan.cyclePhase || null,
       firstName: tgFirstName,
     });
   } catch (err) {

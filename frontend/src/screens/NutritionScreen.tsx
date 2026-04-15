@@ -266,6 +266,27 @@ export default function NutritionScreen() {
           {firstName ? `Привет, ${firstName}` : 'Питание'}
         </h1>
         <p className="text-sm text-gray-400 mt-1 leading-relaxed">{motivation}</p>
+        {plan.cyclePhase && (
+          <div className="flex items-center gap-2 mt-2">
+            <span
+              className="w-2 h-2 rounded-full flex-shrink-0"
+              style={{
+                backgroundColor:
+                  plan.cyclePhase.phase === 'menstrual' ? '#F9A8D4'
+                  : plan.cyclePhase.phase === 'follicular' ? '#7A9E7E'
+                  : plan.cyclePhase.phase === 'ovulation' ? '#F59E0B'
+                  : '#A78BFA',
+              }}
+            />
+            <span className="text-xs text-gray-400">
+              День {plan.cyclePhase.day} цикла · {plan.cyclePhase.name} · {
+                plan.cyclePhase.intensity === 'light' ? 'Мягче с нагрузкой'
+                : plan.cyclePhase.intensity === 'high' ? 'Можно интенсивнее'
+                : 'Умеренная нагрузка'
+              }
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Week strip */}

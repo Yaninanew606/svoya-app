@@ -134,6 +134,27 @@ export default function OnboardingScreen() {
             </p>
 
             <div className="flex flex-col gap-3 flex-1 overflow-y-auto">
+              {plan?.cyclePhase && (
+                <motion.div
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.15, duration: 0.35 }}
+                  className="bg-white rounded-xl p-4 shadow-sm"
+                  style={{
+                    borderLeft: `4px solid ${
+                      plan.cyclePhase.phase === 'menstrual' ? '#F9A8D4'
+                      : plan.cyclePhase.phase === 'follicular' ? '#7A9E7E'
+                      : plan.cyclePhase.phase === 'ovulation' ? '#F59E0B'
+                      : '#A78BFA'
+                    }`,
+                  }}
+                >
+                  <p className="text-sm font-semibold text-[var(--text)] mb-1">
+                    День {plan.cyclePhase.day} цикла — {plan.cyclePhase.name}
+                  </p>
+                  <p className="text-sm text-gray-500 leading-relaxed">{plan.cyclePhase.recommendation}</p>
+                </motion.div>
+              )}
               {personalizedTexts.map((text, i) => (
                 <motion.div
                   key={i}

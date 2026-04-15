@@ -17,6 +17,60 @@ const SYSTEM_PROMPT = `Ты — персональный wellness-ассисте
 
 const DAYS_RU = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье'];
 
+interface CyclePhase {
+  phase: 'menstrual' | 'follicular' | 'ovulation' | 'luteal';
+  day: number;
+  name: string;
+  recommendation: string;
+  intensity: 'light' | 'medium' | 'high';
+  avoid: string;
+}
+
+function calculateCyclePhase(lastPeriodDate: string): CyclePhase {
+  const lastPeriod = new Date(lastPeriodDate);
+  const today = new Date();
+  const diffDays = Math.floor((today.getTime() - lastPeriod.getTime()) / (1000 * 60 * 60 * 24));
+  const cycleDay = ((diffDays % 28) + 28) % 28 + 1; // 1-28
+
+  if (cycleDay <= 5) {
+    return {
+      phase: 'menstrual',
+      day: cycleDay,
+      name: 'Менструальная фаза',
+      recommendation: 'Мягкие тренировки: йога, растяжка, лёгкая ходьба. Упражнения с подъёмом таза помогут снять дискомфорт.',
+      intensity: 'light',
+      avoid: 'Интенсивные прыжки и тяжёлые силовые',
+    };
+  } else if (cycleDay <= 13) {
+    return {
+      phase: 'follicular',
+      day: cycleDay,
+      name: 'Фолликулярная фаза',
+      recommendation: 'Лучшее время для силовых и интенсивных тренировок! Энергия на максимуме.',
+      intensity: 'high',
+      avoid: 'Нет ограничений — используй этот период на максимум',
+    };
+  } else if (cycleDay <= 16) {
+    return {
+      phase: 'ovulation',
+      day: cycleDay,
+      name: 'Овуляция',
+      recommendation: 'Умеренные нагрузки с акцентом на технику. Связки сейчас более подвижны — будь аккуратнее.',
+      intensity: 'medium',
+      avoid: 'Взрывные движения и прыжки — повышен риск травм связок',
+    };
+  } else {
+    return {
+      phase: 'luteal',
+      day: cycleDay,
+      name: 'Лютеиновая фаза',
+      recommendation: 'Умеренные кардио, йога, растяжка. Тело восстанавливается медленнее — не давай максимальную нагрузку.',
+      intensity: 'medium',
+      avoid: 'Тяжёлые интервальные тренировки и максимальные веса',
+    };
+  }
+}
+
 function buildMockWorkout(type: 'strength' | 'cardio' | 'flexibility', duration: number, difficulty: string) {
   const workouts: Record<string, any> = {
     strength: {
@@ -562,6 +616,7 @@ function getMockPlan(params: {
   activityLevel?: string;
   nutritionMode?: string;
   difficulty?: string;
+  lastPeriodDate?: string;
 }) {
   const duration = params.timeAvailable || 15;
   const fitnessLevel = params.fitnessLevel || params.activityLevel || 'beginner';
@@ -580,14 +635,38 @@ function getMockPlan(params: {
 
   const scheduleTemplate = getScheduleForLevel(fitnessLevel);
 
+  // Calculate cycle phase if lastPeriodDate provided
+  const cyclePhase = params.lastPeriodDate ? calculateCyclePhase(params.lastPeriodDate) : null;
+
   const schedule = scheduleTemplate.map(entry => {
     if (entry.type === 'rest') {
       return { day: entry.day, type: 'rest' as const, workout: null };
     }
+
+    let adjustedType = entry.type;
+    let adjustedDifficulty = difficulty;
+
+    if (cyclePhase) {
+      if (cyclePhase.phase === 'menstrual') {
+        // Replace strength with flexibility/yoga, make all workouts easy
+        if (entry.type === 'strength') adjustedType = 'flexibility';
+        adjustedDifficulty = 'easy';
+      } else if (cyclePhase.phase === 'follicular') {
+        // Allow strength and high-intensity — no changes needed
+      } else if (cyclePhase.phase === 'ovulation') {
+        // Prefer controlled strength, avoid explosive — downgrade difficulty
+        if (adjustedDifficulty === 'hard') adjustedDifficulty = 'medium';
+      } else if (cyclePhase.phase === 'luteal') {
+        // Prefer moderate, avoid max intensity
+        if (entry.type === 'strength' && adjustedDifficulty === 'hard') adjustedDifficulty = 'medium';
+        if (adjustedDifficulty === 'hard') adjustedDifficulty = 'medium';
+      }
+    }
+
     return {
       day: entry.day,
-      type: entry.type,
-      workout: buildMockWorkout(entry.type, duration, difficulty)
+      type: adjustedType,
+      workout: buildMockWorkout(adjustedType, duration, adjustedDifficulty)
     };
   });
 
@@ -601,7 +680,8 @@ function getMockPlan(params: {
     nutrition,
     weeklyWorkout: { schedule },
     workout: todayWorkout,
-    message: `Привет! Я подготовила для тебя недельный план — ${duration} минут тренировок и сбалансированное меню с учётом твоих предпочтений. В расписании чередуются силовые, кардио и растяжка, чтобы тело восстанавливалось. Начинай в своём темпе! 🌿`
+    message: `Привет! Я подготовила для тебя недельный план — ${duration} минут тренировок и сбалансированное меню с учётом твоих предпочтений. В расписании чередуются силовые, кардио и растяжка, чтобы тело восстанавливалось. Начинай в своём темпе! 🌿`,
+    cyclePhase,
   };
 }
 
@@ -624,7 +704,8 @@ export async function generatePlan(params: {
   activityLevel?: string;
   nutritionMode?: string;
   difficulty?: string;
-}): Promise<{ nutrition: any; weeklyWorkout: any; workout: any; message: string }> {
+  lastPeriodDate?: string;
+}): Promise<{ nutrition: any; weeklyWorkout: any; workout: any; message: string; cyclePhase?: any }> {
   const client = getClient();
   if (!client) {
     console.log('[Claude] No API key, returning mock plan');
@@ -730,6 +811,9 @@ ${measurements ? `- Рассчитай калории на основе заме
     const dayIndex = todayIndex === 0 ? 6 : todayIndex - 1;
     const todayEntry = parsed.weeklyWorkout?.schedule?.[dayIndex];
     parsed.workout = todayEntry?.workout || parsed.weeklyWorkout?.schedule?.find((s: any) => s.workout)?.workout;
+
+    // Add cycle phase if lastPeriodDate provided
+    parsed.cyclePhase = params.lastPeriodDate ? calculateCyclePhase(params.lastPeriodDate) : null;
 
     return parsed;
   } catch (err) {
