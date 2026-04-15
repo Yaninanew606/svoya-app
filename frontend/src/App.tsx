@@ -32,14 +32,29 @@ function SessionRestorer({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     // Only restore on initial load at root path
-    if (location.pathname !== '/' || plan) {
+    if (location.pathname !== '/') {
       setReady(true);
       return;
     }
 
+    // If local store already has a plan, verify with server
+    if (plan) {
+      api.getTodayPlan()
+        .then(() => {
+          // Server has plan too — go to nutrition
+          navigate('/nutrition', { replace: true });
+        })
+        .catch(() => {
+          // Server has no plan — local data is stale, clear it
+          setPlan(null);
+        })
+        .finally(() => setReady(true));
+      return;
+    }
+
+    // No local plan — check server
     api.getTodayPlan()
       .then((data: any) => {
-        // Restore plan into store
         setPlan({
           planId: data.planId || '',
           nutrition: data.nutrition,
@@ -49,12 +64,10 @@ function SessionRestorer({ children }: { children: React.ReactNode }) {
         });
         if (data.streak) setStreak(data.streak);
         if (data.questionnaire) setQuestionnaire(data.questionnaire);
-        // Navigate to nutrition (returning user's main screen)
         navigate('/nutrition', { replace: true });
       })
       .catch(() => {
-        // No plan on server — clear local store too
-        setPlan(null);
+        // No plan anywhere — fresh user, show welcome
       })
       .finally(() => setReady(true));
   }, []); // eslint-disable-line react-hooks/exhaustive-deps

@@ -100,8 +100,15 @@ export default function WelcomeScreen() {
 
   const handleReset = () => {
     clearAll();
-    localStorage.clear();
-    window.location.reload();
+    // Remove Zustand persisted store before reload
+    localStorage.removeItem('wellness-app-store');
+    // Remove all app data
+    for (const key of Object.keys(localStorage)) {
+      if (key.startsWith('wellness') || key.startsWith('food-diary') || key.startsWith('water-') || key.startsWith('pelvic-floor')) {
+        localStorage.removeItem(key);
+      }
+    }
+    window.location.href = '/';
   };
 
   useEffect(() => {
