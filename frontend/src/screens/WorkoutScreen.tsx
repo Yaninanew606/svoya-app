@@ -1,10 +1,59 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, Check, Flower2, RotateCcw, Wind } from 'lucide-react';
 import { useAppStore } from '../stores/appStore';
 import type { Exercise, WorkoutPlan, DaySchedule } from '../types';
 import TabBar from '../components/TabBar';
+
+const YOGA_EXERCISES: Exercise[] = [
+  { name: 'Поза ребёнка', duration: 60, description: 'Сядь на пятки, вытяни руки вперёд, опусти лоб на пол. Дыши глубоко.', isSkippable: false },
+  { name: 'Кошка-корова', duration: 60, description: 'На четвереньках: прогибай и округляй спину в ритме дыхания.', isSkippable: false },
+  { name: 'Скручивание лёжа', duration: 45, description: 'Ляг на спину, колени согнуты. Опусти оба колена вправо, голову влево. Поменяй сторону.', isSkippable: false },
+  { name: 'Поза голубя', duration: 60, description: 'Одна нога согнута впереди, другая вытянута назад. Мягко опускайся вниз.', isSkippable: false },
+  { name: 'Шавасана', duration: 120, description: 'Ляг на спину, закрой глаза. Расслабь всё тело. Просто дыши.', isSkippable: false },
+];
+
+const MOBILITY_EXERCISES: Exercise[] = [
+  { name: 'Круги шеей', duration: 45, description: 'Медленные круговые движения головой. По 5 раз в каждую сторону.', isSkippable: false },
+  { name: 'Вращения плечами', duration: 45, description: 'Круговые движения плечами вперёд и назад. По 10 раз.', isSkippable: false },
+  { name: 'Круги бёдрами', duration: 45, description: 'Руки на поясе, рисуй большие круги бёдрами. По 10 раз.', isSkippable: false },
+  { name: 'Вращения коленями', duration: 45, description: 'Ноги вместе, слегка согнуты. Круговые движения коленями.', isSkippable: false },
+  { name: 'Перекаты стоп', duration: 45, description: 'Перекатывайся с носка на пятку и обратно. 15 раз.', isSkippable: false },
+];
+
+const BREATHING_EXERCISES: Exercise[] = [
+  { name: 'Дыхание 4-7-8', duration: 60, description: 'Вдох на 4 счёта, задержка на 7, выдох на 8. Успокаивает нервную систему.', isSkippable: false },
+  { name: 'Диафрагмальное дыхание', duration: 60, description: 'Руки на животе. Вдох — живот надувается, выдох — втягивается. Грудь неподвижна.', isSkippable: false },
+  { name: 'Попеременное дыхание', duration: 60, description: 'Закрой правую ноздрю — вдох левой. Закрой левую — выдох правой. Чередуй.', isSkippable: false },
+];
+
+const REST_DAY_OPTIONS = [
+  {
+    id: 'yoga',
+    title: 'Мягкая йога',
+    duration: '10 мин',
+    icon: Flower2,
+    iconColor: 'text-teal-500',
+    exercises: YOGA_EXERCISES,
+  },
+  {
+    id: 'mobility',
+    title: 'Мобильность суставов',
+    duration: '8 мин',
+    icon: RotateCcw,
+    iconColor: 'text-amber-500',
+    exercises: MOBILITY_EXERCISES,
+  },
+  {
+    id: 'breathing',
+    title: 'Дыхательная практика',
+    duration: '5 мин',
+    icon: Wind,
+    iconColor: 'text-blue-500',
+    exercises: BREATHING_EXERCISES,
+  },
+] as const;
 
 const DAY_NAMES = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
 const TYPE_LABELS: Record<string, string> = {
@@ -174,6 +223,87 @@ function CompletionScreen() {
   );
 }
 
+function RestDayOptionCard({
+  option,
+  expanded,
+  onToggle,
+  onStart,
+}: {
+  option: typeof REST_DAY_OPTIONS[number];
+  expanded: boolean;
+  onToggle: () => void;
+  onStart: () => void;
+}) {
+  const Icon = option.icon;
+  return (
+    <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+      <button onClick={onToggle} className="w-full flex items-center gap-3 p-4">
+        <div className={`${option.iconColor}`}>
+          <Icon size={24} />
+        </div>
+        <div className="flex-1 text-left">
+          <span className="font-semibold text-[var(--text)]">{option.title}</span>
+          <span className="text-sm text-gray-400 ml-2">{option.duration}</span>
+        </div>
+        {expanded ? <ChevronUp size={18} className="text-gray-400" /> : <ChevronDown size={18} className="text-gray-400" />}
+      </button>
+      <AnimatePresence>
+        {expanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="overflow-hidden"
+          >
+            <div className="px-4 pb-4 flex flex-col gap-2">
+              {option.exercises.map((ex, i) => (
+                <div key={i} className="flex justify-between items-center py-2 border-t border-gray-100">
+                  <span className="text-sm text-[var(--text)]">{ex.name}</span>
+                  <span className="text-xs text-gray-400">{ex.duration} сек</span>
+                </div>
+              ))}
+              <button
+                onClick={onStart}
+                className="w-full py-3 rounded-2xl bg-[var(--primary)] text-white font-semibold mt-2"
+              >
+                Начать
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+function SmartRestDay({ onStartSession }: { onStartSession: (exercises: Exercise[]) => void }) {
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  return (
+    <div className="px-6">
+      <h2
+        className="text-xl font-semibold text-[var(--text)] mb-2"
+        style={{ fontFamily: 'Cormorant Garamond, serif' }}
+      >
+        День отдыха
+      </h2>
+      <p className="text-gray-400 text-sm mb-5 leading-relaxed">
+        Восстановление — часть программы. Выбери мягкую активность или просто отдохни.
+      </p>
+      <div className="flex flex-col gap-3">
+        {REST_DAY_OPTIONS.map((opt) => (
+          <RestDayOptionCard
+            key={opt.id}
+            option={opt}
+            expanded={expandedId === opt.id}
+            onToggle={() => setExpandedId(expandedId === opt.id ? null : opt.id)}
+            onStart={() => onStartSession([...opt.exercises])}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 /* Weekly schedule strip */
 function WeekStrip({ schedule, selectedDay, onSelect }: { schedule: DaySchedule[]; selectedDay: number; onSelect: (i: number) => void }) {
   const today = new Date().getDay(); // 0=Sun
@@ -210,6 +340,7 @@ export default function WorkoutScreen() {
   const plan = useAppStore((s) => s.plan);
   const [mode, setMode] = useState<'overview' | 'active' | 'done'>('overview');
   const [selectedDay, setSelectedDay] = useState(0);
+  const [restExercises, setRestExercises] = useState<Exercise[] | null>(null);
 
   useEffect(() => {
     if (!plan) navigate('/', { replace: true });
@@ -231,6 +362,9 @@ export default function WorkoutScreen() {
   const workout: WorkoutPlan | null = currentDaySchedule?.workout || plan.workout;
 
   if (mode === 'done') return <CompletionScreen />;
+  if (mode === 'active' && restExercises) {
+    return <StepByStep exercises={restExercises} onFinish={() => { setRestExercises(null); setMode('done'); }} />;
+  }
   if (mode === 'active' && workout) {
     const allExercises = [...workout.phases.warmup, ...workout.phases.main, ...workout.phases.cooldown];
     return <StepByStep exercises={allExercises} onFinish={() => setMode('done')} />;
@@ -263,11 +397,8 @@ export default function WorkoutScreen() {
 
       {/* Rest day */}
       {currentDaySchedule?.type === 'rest' && !currentDaySchedule.workout && (
-        <div className="px-6 py-16 text-center">
-          <h2 className="text-xl font-semibold text-[var(--text)]" style={{ fontFamily: 'Cormorant Garamond, serif' }}>День отдыха</h2>
-          <p className="text-gray-400 mt-2 leading-relaxed">
-            Сегодня восстановление. Лёгкая прогулка или просто отдых — тоже часть программы.
-          </p>
+        <div className="py-4">
+          <SmartRestDay onStartSession={(exercises) => { setRestExercises(exercises); setMode('active'); }} />
         </div>
       )}
 
@@ -299,6 +430,31 @@ export default function WorkoutScreen() {
           </div>
         </>
       )}
+
+      {/* Pelvic floor block */}
+      <div className="px-6 mt-6 mb-4">
+        <div className="bg-white rounded-2xl p-5 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="font-bold text-[var(--text)]">Тазовое дно</p>
+              <p className="text-xs text-gray-400 mt-0.5">3 мин</p>
+            </div>
+            {localStorage.getItem(`pelvic-floor-${new Date().toISOString().slice(0, 10)}`) === 'true' ? (
+              <div className="flex items-center gap-1.5 text-green-600">
+                <Check size={16} />
+                <span className="text-sm font-medium">Выполнено сегодня</span>
+              </div>
+            ) : (
+              <button
+                onClick={() => navigate('/pelvic-floor')}
+                className="px-4 py-2 rounded-xl bg-[var(--primary)] text-white text-sm font-semibold"
+              >
+                Начать
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
 
       <TabBar />
     </div>

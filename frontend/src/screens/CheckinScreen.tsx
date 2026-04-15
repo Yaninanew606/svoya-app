@@ -7,7 +7,22 @@ import { api } from '../api/client';
 import type { DailyCheckin } from '../types';
 import TabBar from '../components/TabBar';
 
-const TOTAL_STEPS = 4;
+const TOTAL_STEPS = 5;
+
+const SYMPTOM_OPTIONS = [
+  { label: 'Приливы жара', value: 'hot_flashes' },
+  { label: 'Головная боль', value: 'headache' },
+  { label: 'Боль в суставах', value: 'joint_pain' },
+  { label: 'Отёки', value: 'swelling' },
+  { label: 'Вздутие', value: 'bloating' },
+  { label: 'Тревожность', value: 'anxiety' },
+  { label: 'Бессонница', value: 'insomnia' },
+  { label: 'Ничего', value: 'none' },
+] as const;
+
+const SYMPTOM_LABELS: Record<string, string> = Object.fromEntries(
+  SYMPTOM_OPTIONS.map((o) => [o.value, o.label]),
+);
 
 function ProgressBar({ step }: { step: number }) {
   const progress = step <= TOTAL_STEPS ? step / TOTAL_STEPS : 1;
@@ -69,6 +84,21 @@ function IconOptionCard({ icon, label, selected, onClick }: IconOptionCardProps)
   );
 }
 
+function SymptomCard({ label, selected, onClick }: { label: string; selected: boolean; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`rounded-2xl px-4 py-3 text-sm font-medium transition-all ${
+        selected
+          ? 'bg-[#E8D5C4]/30 border-2 border-[#B5886A] text-[var(--text)]'
+          : 'bg-white border-2 border-transparent text-gray-600'
+      }`}
+    >
+      {label}
+    </button>
+  );
+}
+
 const slideVariants = {
   enter: { x: 60, opacity: 0 },
   center: { x: 0, opacity: 1 },
@@ -81,11 +111,27 @@ export default function CheckinScreen() {
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
 
+  const symptoms: string[] = (checkin.symptoms as string[]) || [];
+
+  const toggleSymptom = (value: string) => {
+    if (value === 'none') {
+      setCheckin({ symptoms: ['none'] });
+      return;
+    }
+    const filtered = symptoms.filter((s) => s !== 'none');
+    if (filtered.includes(value)) {
+      setCheckin({ symptoms: filtered.filter((s) => s !== value) });
+    } else {
+      setCheckin({ symptoms: [...filtered, value] });
+    }
+  };
+
   const canProceed = () => {
     if (step === 1) return checkin.mood != null;
     if (step === 2) return checkin.sleep != null;
     if (step === 3) return checkin.nutrition != null;
     if (step === 4) return checkin.workout != null;
+    if (step === 5) return true; // symptoms always skippable
     return true;
   };
 
@@ -104,6 +150,7 @@ export default function CheckinScreen() {
         sleep: checkin.sleep as DailyCheckin['sleep'],
         nutrition: checkin.nutrition as DailyCheckin['nutrition'],
         workout: checkin.workout as DailyCheckin['workout'],
+        symptoms: symptoms.length > 0 && !symptoms.includes('none') ? symptoms : undefined,
         overallStatus,
       };
       const res = await api.submitCheckin(full);
@@ -135,6 +182,8 @@ export default function CheckinScreen() {
       'skipped-health': 'Пропустила',
     },
   } as const;
+
+  const displaySymptoms = symptoms.filter((s) => s !== 'none');
 
   return (
     <div className="min-h-screen bg-[var(--background)] pb-24 px-6 pt-8">
@@ -331,6 +380,35 @@ export default function CheckinScreen() {
               className="text-2xl font-bold text-[var(--text)] mb-6"
               style={{ fontFamily: 'Cormorant Garamond, serif' }}
             >
+              Что ещё беспокоило сегодня
+            </h2>
+            <div className="flex flex-wrap gap-2">
+              {SYMPTOM_OPTIONS.map((opt) => (
+                <SymptomCard
+                  key={opt.value}
+                  label={opt.label}
+                  selected={symptoms.includes(opt.value)}
+                  onClick={() => toggleSymptom(opt.value)}
+                />
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {step === 6 && (
+          <motion.div
+            key="s6"
+            variants={slideVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{ duration: 0.25 }}
+            className="mt-8"
+          >
+            <h2
+              className="text-2xl font-bold text-[var(--text)] mb-6"
+              style={{ fontFamily: 'Cormorant Garamond, serif' }}
+            >
               Итоги дня
             </h2>
             <div className="flex flex-col gap-3 mb-8">
@@ -345,6 +423,14 @@ export default function CheckinScreen() {
                   <span className="font-medium text-[var(--text)]">{row.value}</span>
                 </div>
               ))}
+              {displaySymptoms.length > 0 && (
+                <div className="flex justify-between bg-white rounded-xl p-4">
+                  <span className="text-gray-400">Симптомы</span>
+                  <span className="font-medium text-[var(--text)] text-right max-w-[60%]">
+                    {displaySymptoms.map((s) => SYMPTOM_LABELS[s]).join(', ')}
+                  </span>
+                </div>
+              )}
             </div>
 
             <div className="flex flex-col gap-3">

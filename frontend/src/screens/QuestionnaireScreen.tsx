@@ -4,7 +4,25 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAppStore } from '../stores/appStore';
 import ProgressBar from '../components/ProgressBar';
 
-const TOTAL_STEPS = 9;
+const TOTAL_STEPS = 11;
+
+const CYCLE_OPTIONS = [
+  { id: 'regular', label: 'Регулярный цикл' },
+  { id: 'irregular', label: 'Нерегулярный цикл' },
+  { id: 'perimenopause', label: 'Перименопауза' },
+  { id: 'menopause', label: 'Менопауза' },
+  { id: 'skip', label: 'Предпочитаю не указывать' },
+];
+
+const HEALTH_FEATURES_OPTIONS = [
+  { id: 'postpartum', label: 'Были роды' },
+  { id: 'sedentary_work', label: 'Сидячая работа больше 6 часов' },
+  { id: 'headaches', label: 'Частые головные боли' },
+  { id: 'swelling', label: 'Отёки' },
+  { id: 'hot_flashes', label: 'Приливы жара' },
+  { id: 'sleep_issues', label: 'Проблемы со сном' },
+  { id: 'none', label: 'Нет особенностей' },
+];
 
 const GOALS = [
   { id: 'tonus', label: 'Тонус и упругость' },
@@ -140,6 +158,9 @@ export default function QuestionnaireScreen() {
   const [height, setHeight] = useState<string>(questionnaire.measurements?.height?.toString() ?? '');
   const [weight, setWeight] = useState<string>(questionnaire.measurements?.weight?.toString() ?? '');
   const [waist, setWaist] = useState<string>(questionnaire.measurements?.waist?.toString() ?? '');
+  const [cycleStatus, setCycleStatus] = useState(questionnaire.cycleStatus ?? '');
+  const [lastPeriodDate, setLastPeriodDate] = useState(questionnaire.lastPeriodDate ?? '');
+  const [healthFeatures, setHealthFeatures] = useState<string[]>(questionnaire.healthFeatures ?? []);
 
   // Telegram BackButton
   useEffect(() => {
@@ -173,6 +194,8 @@ export default function QuestionnaireScreen() {
       case 7: return trainingTypes.length > 0;
       case 8: return true;
       case 9: return true;
+      case 10: return true;
+      case 11: return true;
       default: return false;
     }
   }, [step, goals, fitnessLevel, time, foodPreferences, dailySchedule, trainingTypes]);
@@ -186,6 +209,9 @@ export default function QuestionnaireScreen() {
       foodPreferences,
       dailySchedule,
       trainingTypes,
+      cycleStatus: cycleStatus || undefined,
+      lastPeriodDate: lastPeriodDate || undefined,
+      healthFeatures: healthFeatures.length > 0 ? healthFeatures : undefined,
     });
   };
 
@@ -220,6 +246,9 @@ export default function QuestionnaireScreen() {
       trainingTypes,
       healthRestrictions: restrictions,
       measurements: Object.keys(measurements).length > 0 ? measurements : undefined,
+      cycleStatus: cycleStatus || undefined,
+      lastPeriodDate: lastPeriodDate || undefined,
+      healthFeatures: healthFeatures.length > 0 ? healthFeatures : undefined,
     });
     navigate('/generating');
   };
@@ -270,6 +299,19 @@ export default function QuestionnaireScreen() {
       if (without.includes(id)) return without.filter((t) => t !== id);
       if (without.length < 3) return [...without, id];
       return without;
+    });
+  };
+
+  const toggleHealthFeature = (id: string) => {
+    if (id === 'none') {
+      setHealthFeatures(['none']);
+      return;
+    }
+    setHealthFeatures((prev) => {
+      const without = prev.filter((f) => f !== 'none');
+      return without.includes(id)
+        ? without.filter((f) => f !== id)
+        : [...without, id];
     });
   };
 
@@ -499,10 +541,73 @@ export default function QuestionnaireScreen() {
             </div>
           </div>
         );
+
+      case 10:
+        return (
+          <div className="flex flex-col gap-4">
+            <div className="text-center">
+              <h2 className="font-[Cormorant_Garamond] text-3xl font-bold text-[var(--text)]">
+                Цикл и гормональный фон
+              </h2>
+              <p className="mt-2 text-sm text-[var(--text)] opacity-50">
+                Мы адаптируем план тренировок под фазу цикла — в разные дни организму нужна разная нагрузка
+              </p>
+            </div>
+            <div className="flex flex-col gap-3">
+              {CYCLE_OPTIONS.map((c) => (
+                <OptionCard
+                  key={c.id}
+                  label={c.label}
+                  selected={cycleStatus === c.id}
+                  onClick={() => setCycleStatus(c.id)}
+                />
+              ))}
+            </div>
+            {(cycleStatus === 'regular' || cycleStatus === 'irregular') && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                className="flex flex-col gap-2 mt-2"
+              >
+                <label className="block text-sm text-[var(--text)] opacity-70">
+                  Первый день последней менструации
+                </label>
+                <input
+                  type="date"
+                  value={lastPeriodDate}
+                  onChange={(e) => setLastPeriodDate(e.target.value)}
+                  className="w-full border border-[var(--secondary)] rounded-xl px-4 py-3 text-sm text-[var(--text)] bg-white focus:outline-none focus:border-[var(--primary)]"
+                />
+                <p className="text-xs text-[var(--text)] opacity-40">
+                  Это поможет точнее подобрать нагрузку по дням
+                </p>
+              </motion.div>
+            )}
+          </div>
+        );
+
+      case 11:
+        return (
+          <div className="flex flex-col gap-4">
+            <h2 className="font-[Cormorant_Garamond] text-3xl font-bold text-[var(--text)] text-center">
+              Что ещё учесть
+            </h2>
+            <div className="flex flex-col gap-3">
+              {HEALTH_FEATURES_OPTIONS.map((f) => (
+                <CheckboxCard
+                  key={f.id}
+                  label={f.label}
+                  selected={healthFeatures.includes(f.id)}
+                  onClick={() => toggleHealthFeature(f.id)}
+                />
+              ))}
+            </div>
+          </div>
+        );
     }
   };
 
-  const isSkippableStep = step === 8 || step === 9;
+  const isSkippableStep = step === 8 || step === 9 || step === 10 || step === 11;
 
   return (
     <div className="min-h-screen flex flex-col px-6 py-6 max-w-md mx-auto">

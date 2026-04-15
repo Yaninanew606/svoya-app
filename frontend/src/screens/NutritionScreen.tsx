@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { useAppStore } from '../stores/appStore';
 import TabBar from '../components/TabBar';
+import WaterTracker from '../components/WaterTracker';
 import type { Meal, NutritionPlan } from '../types';
 
 const DAY_NAMES_SHORT = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
@@ -230,6 +231,11 @@ export default function NutritionScreen() {
           Питание
         </h1>
         <p className="text-sm text-gray-400 mt-1">Недельный план</p>
+      </div>
+
+      {/* Water tracker */}
+      <div className="px-6 mb-4">
+        <WaterTracker />
       </div>
 
       {/* Week strip */}

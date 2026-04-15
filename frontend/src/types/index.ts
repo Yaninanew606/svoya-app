@@ -12,6 +12,9 @@ export interface QuestionnaireData {
     weight?: number;
     waist?: number;
   };
+  cycleStatus?: string; // regular, irregular, perimenopause, menopause, skip
+  lastPeriodDate?: string; // ISO date
+  healthFeatures?: string[]; // postpartum, sedentary_work, headaches, swelling, hot_flashes, sleep_issues
 }
 
 export interface Meal {
@@ -76,6 +79,7 @@ export interface DailyCheckin {
   sleep: 'yes' | 'no' | 'almost';
   nutrition: 'yes' | 'partial' | 'no';
   workout: 'yes' | 'partial' | 'no' | 'skipped-health';
+  symptoms?: string[];
   overallStatus: 'good' | 'hard-day' | 'need-easier';
 }
 

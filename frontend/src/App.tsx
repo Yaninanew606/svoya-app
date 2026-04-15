@@ -14,6 +14,7 @@ const SupportScreen = lazy(() => import('./screens/SupportScreen'));
 const WeeklyPlanScreen = lazy(() => import('./screens/WeeklyPlanScreen'));
 const AnalyticsScreen = lazy(() => import('./screens/AnalyticsScreen'));
 const FoodDiaryScreen = lazy(() => import('./screens/FoodDiaryScreen'));
+const PelvicFloorScreen = lazy(() => import('./screens/PelvicFloorScreen'));
 
 function Loading() {
   return (
@@ -79,6 +80,7 @@ export default function App() {
             <Route path="/support" element={<SupportScreen />} />
             <Route path="/analytics" element={<AnalyticsScreen />} />
             <Route path="/diary" element={<FoodDiaryScreen />} />
+            <Route path="/pelvic-floor" element={<PelvicFloorScreen />} />
           </Routes>
         </AnimatePresence>
       </Suspense>
