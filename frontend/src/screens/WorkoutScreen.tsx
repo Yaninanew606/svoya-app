@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, ChevronUp, Check, Flower2, RotateCcw, Wind } from 'lucide-react';
+import { ChevronDown, ChevronUp, Check, Flower2, RotateCcw, Wind, Settings2 } from 'lucide-react';
 import { useAppStore } from '../stores/appStore';
 import type { Exercise, WorkoutPlan, DaySchedule } from '../types';
 import TabBar from '../components/TabBar';
@@ -322,7 +322,19 @@ function SmartRestDay({ onStartSession }: { onStartSession: (exercises: Exercise
 }
 
 /* Weekly schedule strip */
-function WeekStrip({ schedule, selectedDay, onSelect }: { schedule: DaySchedule[]; selectedDay: number; onSelect: (i: number) => void }) {
+function WeekStrip({
+  schedule,
+  selectedDay,
+  onSelect,
+  editMode,
+  swapFrom,
+}: {
+  schedule: DaySchedule[];
+  selectedDay: number;
+  onSelect: (i: number) => void;
+  editMode: boolean;
+  swapFrom: number | null;
+}) {
   const today = new Date().getDay(); // 0=Sun
   return (
     <div className="flex gap-2 overflow-x-auto pb-2 px-6 -mx-6 scrollbar-hide">
@@ -330,22 +342,31 @@ function WeekStrip({ schedule, selectedDay, onSelect }: { schedule: DaySchedule[
         const dayIndex = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'].indexOf(day.day);
         const isToday = dayIndex === today;
         const isSelected = i === selectedDay;
+        const isSwapSource = editMode && swapFrom === i;
         return (
-          <button
+          <motion.button
             key={i}
+            layout
             onClick={() => onSelect(i)}
-            className={`flex flex-col items-center min-w-[64px] px-3 py-2 rounded-xl border transition-all ${
-              isSelected ? 'border-[var(--primary)] bg-[var(--primary)]/10' : 'border-gray-200 bg-white'
+            animate={isSwapSource ? { scale: 1.08 } : { scale: 1 }}
+            className={`flex flex-col items-center px-3 rounded-xl border transition-all ${
+              editMode ? 'min-w-[72px] py-3' : 'min-w-[64px] py-2'
+            } ${
+              isSwapSource
+                ? 'border-[var(--primary)] ring-2 ring-[var(--primary)] bg-[var(--primary)]/10'
+                : isSelected && !editMode
+                  ? 'border-[var(--primary)] bg-[var(--primary)]/10'
+                  : 'border-gray-200 bg-white'
             }`}
           >
-            <span className={`text-xs font-medium ${isSelected ? 'text-[var(--primary)]' : 'text-gray-500'}`}>
+            <span className={`text-xs font-medium ${isSelected || isSwapSource ? 'text-[var(--primary)]' : 'text-gray-500'}`}>
               {day.day.slice(0, 2)}
             </span>
             <span className={`text-[10px] mt-0.5 ${TYPE_COLORS[day.type]?.split(' ')[1] || 'text-gray-400'}`}>
               {TYPE_LABELS[day.type]}
             </span>
-            {isToday && <div className="w-1 h-1 rounded-full bg-[var(--primary)] mt-1" />}
-          </button>
+            {isToday && !editMode && <div className="w-1 h-1 rounded-full bg-[var(--primary)] mt-1" />}
+          </motion.button>
         );
       })}
     </div>
@@ -355,9 +376,12 @@ function WeekStrip({ schedule, selectedDay, onSelect }: { schedule: DaySchedule[
 export default function WorkoutScreen() {
   const navigate = useNavigate();
   const plan = useAppStore((s) => s.plan);
+  const setPlan = useAppStore((s) => s.setPlan);
   const [mode, setMode] = useState<'overview' | 'active' | 'done'>('overview');
   const [selectedDay, setSelectedDay] = useState(0);
   const [restExercises, setRestExercises] = useState<Exercise[] | null>(null);
+  const [editMode, setEditMode] = useState(false);
+  const [swapFrom, setSwapFrom] = useState<number | null>(null);
 
   useEffect(() => {
     if (!plan) navigate('/', { replace: true });
@@ -375,6 +399,32 @@ export default function WorkoutScreen() {
   if (!plan) return null;
 
   const weeklySchedule = plan.weeklyWorkout?.schedule;
+
+  const handleDayTap = (index: number) => {
+    if (!editMode) {
+      setSelectedDay(index);
+      return;
+    }
+
+    if (swapFrom === null) {
+      setSwapFrom(index);
+    } else {
+      if (swapFrom !== index && weeklySchedule) {
+        const newSchedule = [...weeklySchedule];
+        const temp = { ...newSchedule[swapFrom] };
+        newSchedule[swapFrom] = { ...newSchedule[swapFrom], type: newSchedule[index].type, workout: newSchedule[index].workout };
+        newSchedule[index] = { ...newSchedule[index], type: temp.type, workout: temp.workout };
+
+        if (plan) {
+          setPlan({
+            ...plan,
+            weeklyWorkout: { schedule: newSchedule },
+          });
+        }
+      }
+      setSwapFrom(null);
+    }
+  };
   const currentDaySchedule = weeklySchedule?.[selectedDay];
   const workout: WorkoutPlan | null = currentDaySchedule?.workout || plan.workout;
 
@@ -393,13 +443,40 @@ export default function WorkoutScreen() {
         <h1 className="text-2xl font-bold text-[var(--text)]" style={{ fontFamily: 'Cormorant Garamond, serif' }}>
           Тренировки
         </h1>
-        <p className="text-sm text-gray-400 mt-1">Недельная программа</p>
+        <div className="flex items-center justify-between mt-1">
+          <p className="text-sm text-gray-400">Недельная программа</p>
+          {weeklySchedule && (
+            <button
+              onClick={() => {
+                setEditMode(!editMode);
+                setSwapFrom(null);
+              }}
+              className={`flex items-center gap-1.5 text-sm font-medium px-3 py-1 rounded-lg transition-all ${
+                editMode
+                  ? 'bg-[var(--primary)] text-white'
+                  : 'text-[var(--primary)]'
+              }`}
+            >
+              <Settings2 size={14} />
+              {editMode ? 'Готово' : 'Настроить'}
+            </button>
+          )}
+        </div>
+        {editMode && (
+          <motion.p
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-xs text-gray-400 mt-2"
+          >
+            Нажми два дня чтобы поменять местами
+          </motion.p>
+        )}
       </div>
 
       {/* Weekly schedule strip */}
       {weeklySchedule && (
         <div className="px-6 mb-4">
-          <WeekStrip schedule={weeklySchedule} selectedDay={selectedDay} onSelect={setSelectedDay} />
+          <WeekStrip schedule={weeklySchedule} selectedDay={selectedDay} onSelect={handleDayTap} editMode={editMode} swapFrom={swapFrom} />
         </div>
       )}
 
