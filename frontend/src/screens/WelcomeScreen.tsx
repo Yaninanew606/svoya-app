@@ -89,7 +89,7 @@ export default function WelcomeScreen() {
         style={{ background: 'linear-gradient(180deg, #1A1A1A 0%, #2A2420 100%)' }}
       >
         <p className="text-gray-400 text-sm text-center leading-relaxed">
-          Питание и тренировки,<br />которые понимают твой возраст
+          Питание и тренировки,<br />которые понимают твоё здоровье
         </p>
 
         <motion.button
