@@ -69,19 +69,7 @@ const TYPE_COLORS: Record<string, string> = {
   rest: 'bg-gray-50 text-gray-500 border-gray-200',
 };
 
-function DifficultyBadge({ difficulty }: { difficulty: WorkoutPlan['difficulty'] }) {
-  const colors = {
-    easy: 'bg-green-100 text-green-700',
-    medium: 'bg-orange-100 text-orange-700',
-    hard: 'bg-red-100 text-red-700',
-  };
-  const labels = { easy: 'Лёгкая', medium: 'Средняя', hard: 'Интенсивная' };
-  return (
-    <span className={`text-xs px-2.5 py-0.5 rounded-full font-medium ${colors[difficulty]}`}>
-      {labels[difficulty]}
-    </span>
-  );
-}
+const DIFFICULTY_LABELS: Record<string, string> = { easy: 'Лёгкая', medium: 'Средняя', hard: 'Интенсивная' };
 
 function ExerciseCard({ exercise }: { exercise: Exercise }) {
   const [showHint, setShowHint] = useState(false);
@@ -280,15 +268,6 @@ function SmartRestDay({ onStartSession }: { onStartSession: (exercises: Exercise
   const [expandedId, setExpandedId] = useState<string | null>(null);
   return (
     <div className="px-6">
-      <h2
-        className="text-xl font-semibold text-[var(--text)] mb-2"
-        style={{ fontFamily: 'Cormorant Garamond, serif' }}
-      >
-        День отдыха
-      </h2>
-      <p className="text-gray-400 text-sm mb-5 leading-relaxed">
-        Восстановление — часть программы. Выбери мягкую активность или просто отдохни.
-      </p>
       <div className="flex flex-col gap-3">
         {REST_DAY_OPTIONS.map((opt) => (
           <RestDayOptionCard
@@ -402,6 +381,8 @@ export default function WorkoutScreen() {
 
   const currentDaySchedule = weeklySchedule?.[selectedDay];
   const workout: WorkoutPlan | null = currentDaySchedule?.workout || plan.workout;
+  const isRestDay = currentDaySchedule?.type === 'rest' && !currentDaySchedule.workout;
+  const pelvicDone = localStorage.getItem(`pelvic-floor-${new Date().toISOString().slice(0, 10)}`) === 'true';
 
   if (mode === 'done') return <CompletionScreen />;
   if (mode === 'active' && restExercises) {
@@ -414,26 +395,21 @@ export default function WorkoutScreen() {
 
   return (
     <div className="min-h-screen bg-[var(--background)] pb-24">
-      <div className="px-6 pt-8 pb-4">
-        <h1 className="text-2xl font-bold text-[var(--text)]" style={{ fontFamily: 'Cormorant Garamond, serif' }}>
-          Тренировки
-        </h1>
-        <div className="flex items-center justify-between mt-1">
-          <p className="text-sm text-gray-400">Недельная программа</p>
-          {weeklySchedule && (
-            <button
-              onClick={() => setEditMode(!editMode)}
-              className={`flex items-center gap-1.5 text-sm font-medium px-3 py-1 rounded-lg transition-all ${
-                editMode
-                  ? 'bg-[var(--primary)] text-white'
-                  : 'text-[var(--primary)]'
-              }`}
-            >
-              <Settings2 size={14} />
-              {editMode ? 'Готово' : 'Настроить'}
-            </button>
-          )}
-        </div>
+      {/* Settings button — top right */}
+      <div className="px-6 pt-6 pb-2 flex items-center justify-end">
+        {weeklySchedule && (
+          <button
+            onClick={() => setEditMode(!editMode)}
+            className={`flex items-center gap-1.5 text-sm font-medium px-3 py-1 rounded-lg transition-all ${
+              editMode
+                ? 'bg-[var(--primary)] text-white'
+                : 'text-[var(--primary)]'
+            }`}
+          >
+            <Settings2 size={14} />
+            {editMode ? 'Готово' : 'Настроить'}
+          </button>
+        )}
       </div>
 
       {/* Edit mode: tap type tags to change */}
@@ -470,63 +446,27 @@ export default function WorkoutScreen() {
         </div>
       )}
 
-      {/* Weekly schedule strip (normal mode) — always first */}
+      {/* 1. Week strip (compact, no title) */}
       {!editMode && weeklySchedule && (
         <div className="px-6 mb-4">
           <WeekStrip schedule={weeklySchedule} selectedDay={selectedDay} onSelect={setSelectedDay} editMode={false} swapFrom={null} />
         </div>
       )}
 
-      {/* Cycle phase recommendation — below week strip */}
-      {!editMode && plan.cyclePhase && (
+      {/* 2. Hero action card */}
+      {!editMode && !isRestDay && workout && (
         <div className="px-6 mb-4">
-          <div
-            className="bg-white rounded-2xl p-4 shadow-sm"
-            style={{
-              borderLeft: `4px solid ${
-                plan.cyclePhase.phase === 'menstrual' ? '#F9A8D4'
-                : plan.cyclePhase.phase === 'follicular' ? '#7A9E7E'
-                : plan.cyclePhase.phase === 'ovulation' ? '#F59E0B'
-                : '#A78BFA'
-              }`,
-            }}
-          >
-            <p className="text-sm font-semibold text-[var(--text)] mb-1">
-              День {plan.cyclePhase.day} цикла — {plan.cyclePhase.name}
+          <div className="bg-white rounded-2xl shadow-sm p-5">
+            <p className="text-sm text-gray-500 mb-1">
+              {TYPE_LABELS[currentDaySchedule?.type || ''] || 'Силовая'} · {workout.duration} мин · {DIFFICULTY_LABELS[workout.difficulty]}
             </p>
-            <p className="text-sm text-gray-500 leading-relaxed">{plan.cyclePhase.recommendation}</p>
-          </div>
-        </div>
-      )}
-
-      {/* Selected day info */}
-      {currentDaySchedule && (
-        <div className="px-6 mb-4">
-          <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border text-sm font-medium ${TYPE_COLORS[currentDaySchedule.type]}`}>
-            {currentDaySchedule.day} — {TYPE_LABELS[currentDaySchedule.type]}
-          </div>
-        </div>
-      )}
-
-      {/* Rest day */}
-      {currentDaySchedule?.type === 'rest' && !currentDaySchedule.workout && (
-        <div className="py-4">
-          <SmartRestDay onStartSession={(exercises) => { setRestExercises(exercises); setMode('active'); }} />
-        </div>
-      )}
-
-      {/* Workout details */}
-      {workout && (currentDaySchedule?.type !== 'rest') && (
-        <>
-          <div className="px-6 pb-2 flex items-center gap-3">
-            <span className="text-sm text-gray-500">{workout.duration} мин</span>
-            <DifficultyBadge difficulty={workout.difficulty} />
-            {workout.focus && <span className="text-sm text-gray-400">{workout.focus}</span>}
-          </div>
-
-          {/* Main action — immediately visible */}
-          <div className="px-6 mb-4 flex flex-col gap-2">
-            <button onClick={() => setMode('active')} className="w-full py-3.5 rounded-2xl bg-[var(--primary)] text-white font-semibold text-lg">
+            {workout.focus && (
+              <p className="text-sm text-gray-400 mb-4">{workout.focus}</p>
+            )}
+            <button
+              onClick={() => setMode('active')}
+              className="w-full py-3.5 rounded-2xl bg-[var(--primary)] text-white font-semibold text-lg mb-3"
+            >
               Начать тренировку
             </button>
             <div className="flex justify-center gap-4">
@@ -538,38 +478,89 @@ export default function WorkoutScreen() {
               </button>
             </div>
           </div>
-
-          <div className="px-6 flex flex-col gap-2">
-            <CollapsibleSection title="Разминка" exercises={workout.phases.warmup} />
-            <CollapsibleSection title="Основной блок" exercises={workout.phases.main} />
-            <CollapsibleSection title="Заминка" exercises={workout.phases.cooldown} />
-          </div>
-        </>
+        </div>
       )}
 
-      {/* Pelvic floor block */}
-      <div className="px-6 mt-6 mb-4">
-        <div className="bg-white rounded-2xl p-5 shadow-sm">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-bold text-[var(--text)]">Тазовое дно</p>
-              <p className="text-xs text-gray-400 mt-0.5">3 мин</p>
-            </div>
-            {localStorage.getItem(`pelvic-floor-${new Date().toISOString().slice(0, 10)}`) === 'true' ? (
-              <div className="flex items-center gap-1.5 text-green-600">
-                <Check size={16} />
-                <span className="text-sm font-medium">Выполнено сегодня</span>
-              </div>
-            ) : (
-              <button
-                onClick={() => navigate('/pelvic-floor')}
-                className="px-4 py-2 rounded-xl bg-[var(--primary)] text-white text-sm font-semibold"
-              >
-                Начать
-              </button>
-            )}
+      {/* 2. Hero card — rest day */}
+      {!editMode && isRestDay && (
+        <div className="px-6 mb-4">
+          <div className="bg-white rounded-2xl shadow-sm p-5">
+            <p className="text-lg font-semibold text-[var(--text)]" style={{ fontFamily: 'Cormorant Garamond, serif' }}>
+              День отдыха
+            </p>
+            <p className="text-sm text-gray-400 mt-1">
+              Восстановление — часть программы
+            </p>
           </div>
         </div>
+      )}
+
+      {/* 3. Cycle info — compact line */}
+      {!editMode && plan.cyclePhase && (
+        <div className="px-6 mb-4">
+          <p className="text-sm text-gray-500">
+            <span
+              className="inline-block w-2 h-2 rounded-full mr-1.5"
+              style={{
+                backgroundColor:
+                  plan.cyclePhase.phase === 'menstrual' ? '#F9A8D4'
+                  : plan.cyclePhase.phase === 'follicular' ? '#7A9E7E'
+                  : plan.cyclePhase.phase === 'ovulation' ? '#F59E0B'
+                  : '#A78BFA',
+              }}
+            />
+            День {plan.cyclePhase.day} цикла — {plan.cyclePhase.name}: {plan.cyclePhase.recommendation}
+          </p>
+        </div>
+      )}
+
+      {/* Rest day options */}
+      {isRestDay && (
+        <div className="py-2">
+          <SmartRestDay onStartSession={(exercises) => { setRestExercises(exercises); setMode('active'); }} />
+        </div>
+      )}
+
+      {/* 4. Exercise sections — collapsed by default */}
+      {workout && !isRestDay && (
+        <div className="px-6 flex flex-col gap-2">
+          <CollapsibleSection title="Разминка" exercises={workout.phases.warmup} defaultOpen={false} />
+          <CollapsibleSection title="Основной блок" exercises={workout.phases.main} defaultOpen={false} />
+          <CollapsibleSection title="Заминка" exercises={workout.phases.cooldown} defaultOpen={false} />
+        </div>
+      )}
+
+      {/* 5. Pelvic floor — compact line */}
+      <div className="px-6 mt-4 mb-3">
+        <div className="flex items-center justify-between bg-white rounded-xl px-4 py-3 shadow-sm">
+          <span className="text-sm font-medium text-[var(--text)]">Тазовое дно · 3 мин</span>
+          {pelvicDone ? (
+            <div className="flex items-center gap-1 text-green-600">
+              <Check size={16} />
+              <span className="text-xs font-medium">Выполнено</span>
+            </div>
+          ) : (
+            <button
+              onClick={() => navigate('/pelvic-floor')}
+              className="px-3 py-1.5 rounded-lg bg-[var(--primary)] text-white text-xs font-semibold"
+            >
+              Начать
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* 6. BreathFlow — small link */}
+      <div className="px-6 mb-4">
+        <a
+          href="https://t.me/BreathFlowAI_bot"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2 text-sm text-[var(--primary)]"
+        >
+          <Wind size={16} />
+          <span>BreathFlow — дыхательные практики</span>
+        </a>
       </div>
 
       <TabBar />

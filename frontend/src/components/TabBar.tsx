@@ -1,11 +1,10 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import { UtensilsCrossed, Dumbbell, ClipboardCheck, BarChart3 } from 'lucide-react';
+import { CalendarDays, Dumbbell, User } from 'lucide-react';
 
 const tabs = [
-  { path: '/nutrition', label: 'Питание', icon: UtensilsCrossed },
+  { path: '/nutrition', label: 'Сегодня', icon: CalendarDays },
   { path: '/workout', label: 'Тренировка', icon: Dumbbell },
-  { path: '/checkin', label: 'Чек-ин', icon: ClipboardCheck },
-  { path: '/analytics', label: 'Аналитика', icon: BarChart3 },
+  { path: '/analytics', label: 'Профиль', icon: User },
 ] as const;
 
 export default function TabBar() {
@@ -20,14 +19,14 @@ export default function TabBar() {
           <button
             key={path}
             onClick={() => navigate(path)}
-            className="flex-1 flex flex-col items-center gap-0.5 py-3 transition-colors"
+            className="flex-1 flex flex-col items-center gap-0.5 py-3 min-w-[48px]"
           >
             <Icon
-              size={22}
+              size={24}
               className={active ? 'text-[var(--primary)]' : 'text-gray-400'}
             />
             <span
-              className={`text-xs ${active ? 'text-[var(--primary)] font-semibold' : 'text-gray-400'}`}
+              className={`text-[10px] ${active ? 'text-[var(--primary)] font-semibold' : 'text-gray-400'}`}
             >
               {label}
             </span>
