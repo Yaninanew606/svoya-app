@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Leaf, Flame, Sparkles, Calendar, Pencil } from 'lucide-react';
+import { Leaf, Flame, Sparkles, Calendar, Pencil, Wind } from 'lucide-react';
 import { useAppStore } from '../stores/appStore';
 import { api } from '../api/client';
 import TabBar from '../components/TabBar';
@@ -153,6 +153,22 @@ export default function SupportScreen() {
             На главную
           </button>
         </div>
+
+        {/* BreathFlow cross-promo */}
+        <a
+          href="https://t.me/BreathFlowAI_bot"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-6 bg-gradient-to-r from-[#E8D5C4]/40 to-[#B5886A]/10 rounded-2xl p-4 flex items-center gap-3 border border-[#E8D5C4]"
+        >
+          <div className="w-10 h-10 rounded-full bg-[var(--primary)]/20 flex items-center justify-center shrink-0">
+            <Wind size={20} className="text-[var(--primary)]" />
+          </div>
+          <div className="flex-1">
+            <p className="font-semibold text-[var(--text)] text-sm">Дыхательные практики</p>
+            <p className="text-xs text-gray-500">BreathFlow — Вим Хоф, Бутейко и другие техники для расслабления и энергии</p>
+          </div>
+        </a>
       </div>
 
       <TabBar />

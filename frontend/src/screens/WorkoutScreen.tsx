@@ -299,6 +299,23 @@ function SmartRestDay({ onStartSession }: { onStartSession: (exercises: Exercise
             onStart={() => onStartSession([...opt.exercises])}
           />
         ))}
+
+        {/* BreathFlow cross-promo */}
+        <a
+          href="https://t.me/BreathFlowAI_bot"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="bg-gradient-to-r from-[#E8D5C4]/40 to-[#B5886A]/10 rounded-2xl p-4 flex items-center gap-3 border border-[#E8D5C4]"
+        >
+          <div className="w-10 h-10 rounded-full bg-[var(--primary)]/20 flex items-center justify-center">
+            <Wind size={20} className="text-[var(--primary)]" />
+          </div>
+          <div className="flex-1">
+            <p className="font-semibold text-[var(--text)] text-sm">BreathFlow</p>
+            <p className="text-xs text-gray-500">Дыхательные практики: Вим Хоф, квадратное, Бутейко</p>
+          </div>
+          <span className="text-xs text-[var(--primary)] font-medium whitespace-nowrap">Открыть</span>
+        </a>
       </div>
     </div>
   );
