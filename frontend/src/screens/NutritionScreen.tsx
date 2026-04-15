@@ -221,9 +221,17 @@ const MOTIVATIONS = [
 
 function getTelegramFirstName(): string {
   try {
-    return (window.Telegram?.WebApp?.initDataUnsafe?.user as any)?.first_name || '';
+    // Try Telegram WebApp SDK
+    const tgUser = (window.Telegram?.WebApp?.initDataUnsafe?.user as any);
+    if (tgUser?.first_name) {
+      // Cache it for next time
+      localStorage.setItem('tg_first_name', tgUser.first_name);
+      return tgUser.first_name;
+    }
+    // Fallback to cached name
+    return localStorage.getItem('tg_first_name') || '';
   } catch {
-    return '';
+    return localStorage.getItem('tg_first_name') || '';
   }
 }
 

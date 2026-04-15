@@ -4,6 +4,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, ArrowRight } from 'lucide-react';
 import { useAppStore } from '../stores/appStore';
 
+function getFirstName(): string {
+  try {
+    const name = (window.Telegram?.WebApp?.initDataUnsafe?.user as any)?.first_name;
+    if (name) localStorage.setItem('tg_first_name', name);
+    return name || localStorage.getItem('tg_first_name') || '';
+  } catch { return localStorage.getItem('tg_first_name') || ''; }
+}
+
 const TYPE_LABELS: Record<string, string> = {
   strength: 'Силовая',
   cardio: 'Кардио',
@@ -34,6 +42,7 @@ export default function OnboardingScreen() {
   const [slide, setSlide] = useState(0);
 
   const q = questionnaire;
+  const firstName = useMemo(() => getFirstName(), []);
   const schedule = plan?.weeklyWorkout?.schedule || [];
   const nutrition = plan?.nutrition;
 
@@ -120,11 +129,9 @@ export default function OnboardingScreen() {
               Твой персональный план готов
             </h1>
 
-            {q.age && (
-              <p className="text-base text-gray-400 mb-6">
-                Для тебя, {q.age} лет
-              </p>
-            )}
+            <p className="text-base text-gray-400 mb-6">
+              {firstName ? `${firstName}, вот твой план` : q.age ? `Для тебя, ${q.age} лет` : ''}
+            </p>
 
             <div className="flex flex-col gap-3 flex-1 overflow-y-auto">
               {personalizedTexts.map((text, i) => (
