@@ -206,7 +206,7 @@ export default function WelcomeScreen() {
       transition={{ duration: 0.6, ease: 'easeOut' }}
     >
       <div className="text-center flex flex-col items-center gap-5">
-        <BrandLogo size={120} />
+        <BrandLogo />
 
         <h1 className="font-[Cormorant_Garamond] text-4xl font-bold text-[var(--text)]">
           Своя
