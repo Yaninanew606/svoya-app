@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -202,10 +202,37 @@ function GroceryList({ items }: { items: string[] }) {
   );
 }
 
+const MOTIVATIONS = [
+  'Каждый день — маленький шаг к большим изменениям',
+  'Ты уже здесь — значит, заботишься о себе',
+  'Сегодня отличный день, чтобы сделать что-то для себя',
+  'Твоё тело благодарно за каждое доброе решение',
+  'Не идеально — а по-своему. И это правильно',
+  'Маленькие привычки создают большие перемены',
+  'Ты сильнее, чем думаешь',
+  'Забота о себе — не эгоизм, а необходимость',
+  'Один день за раз. Ты справляешься',
+  'Лучшее время начать — сейчас. И ты уже начала',
+  'Прогресс важнее перфекционизма',
+  'Слушай своё тело — оно знает, что нужно',
+  'Ты заслуживаешь чувствовать себя хорошо',
+  'Движение — это благодарность своему телу',
+];
+
+function getTelegramFirstName(): string {
+  try {
+    return (window.Telegram?.WebApp?.initDataUnsafe?.user as any)?.first_name || '';
+  } catch {
+    return '';
+  }
+}
+
 export default function NutritionScreen() {
   const navigate = useNavigate();
   const plan = useAppStore((s) => s.plan);
   const [selectedDay, setSelectedDay] = useState(getTodayIndex);
+  const firstName = useMemo(() => getTelegramFirstName(), []);
+  const motivation = useMemo(() => MOTIVATIONS[Math.floor(Math.random() * MOTIVATIONS.length)], []);
 
   useEffect(() => {
     if (!plan) navigate('/', { replace: true });
@@ -228,9 +255,9 @@ export default function NutritionScreen() {
           className="text-2xl font-bold text-[var(--text)]"
           style={{ fontFamily: 'Cormorant Garamond, serif' }}
         >
-          Питание
+          {firstName ? `Привет, ${firstName}` : 'Питание'}
         </h1>
-        <p className="text-sm text-gray-400 mt-1">Недельный план</p>
+        <p className="text-sm text-gray-400 mt-1 leading-relaxed">{motivation}</p>
       </div>
 
       {/* Week strip */}
