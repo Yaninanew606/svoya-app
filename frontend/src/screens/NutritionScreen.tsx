@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Sunrise, Sun, Moon, Apple, ShoppingCart, Copy, Download,
-  Clock, ChevronDown, ChevronUp,
+  Clock, ChevronDown, ChevronUp, Timer,
 } from 'lucide-react';
 import { useAppStore } from '../stores/appStore';
 import TabBar from '../components/TabBar';
@@ -241,7 +241,17 @@ export default function NutritionScreen() {
   const plan = useAppStore((s) => s.plan);
   const questionnaire = useAppStore((s) => s.questionnaire);
   const [selectedDay, setSelectedDay] = useState(getTodayIndex);
-  const hasFasting = questionnaire.foodPreferences?.includes('intermittent_fasting');
+  const questionnaireFasting = questionnaire.foodPreferences?.includes('intermittent_fasting');
+  const [fastingEnabled, setFastingEnabled] = useState(() => {
+    const stored = localStorage.getItem('fasting-enabled');
+    return stored !== null ? stored === 'true' : !!questionnaireFasting;
+  });
+
+  const toggleFasting = () => {
+    const next = !fastingEnabled;
+    setFastingEnabled(next);
+    localStorage.setItem('fasting-enabled', String(next));
+  };
   const firstName = useMemo(() => getTelegramFirstName(), []);
   const motivation = useMemo(() => MOTIVATIONS[Math.floor(Math.random() * MOTIVATIONS.length)], []);
 
@@ -297,12 +307,23 @@ export default function NutritionScreen() {
         <WeekStrip selectedDay={selectedDay} onSelect={setSelectedDay} />
       </div>
 
-      {/* Fasting window (if intermittent fasting selected) */}
-      {hasFasting && (
-        <div className="px-6 mb-4">
+      {/* Fasting toggle + window */}
+      <div className="px-6 mb-4">
+        {fastingEnabled ? (
           <FastingWindow dailySchedule={questionnaire.dailySchedule} />
-        </div>
-      )}
+        ) : (
+          <button
+            onClick={toggleFasting}
+            className="w-full flex items-center gap-3 bg-white rounded-2xl p-4 shadow-sm text-left"
+          >
+            <Timer size={18} className="text-gray-400" />
+            <div className="flex-1">
+              <span className="text-sm font-medium text-[var(--text)]">Интервальное голодание</span>
+              <span className="text-xs text-gray-400 block">Нажми чтобы настроить окно приёма пищи</span>
+            </div>
+          </button>
+        )}
+      </div>
 
       {/* Water tracker */}
       <div className="px-6 mb-4">
