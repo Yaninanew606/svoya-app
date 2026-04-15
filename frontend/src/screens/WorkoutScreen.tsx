@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, ChevronUp, Check, Flower2, RotateCcw, Wind, Settings2, ArrowUp, ArrowDown } from 'lucide-react';
+import { ChevronDown, ChevronUp, Check, Flower2, RotateCcw, Wind, Settings2 } from 'lucide-react';
 import { useAppStore } from '../stores/appStore';
 import type { Exercise, WorkoutPlan, DaySchedule } from '../types';
 import TabBar from '../components/TabBar';
@@ -400,15 +400,6 @@ export default function WorkoutScreen() {
 
   const weeklySchedule = plan.weeklyWorkout?.schedule;
 
-  const swapDays = (indexA: number, indexB: number) => {
-    if (!weeklySchedule || indexA < 0 || indexB >= weeklySchedule.length) return;
-    const newSchedule = weeklySchedule.map(d => ({ ...d }));
-    const tempType = newSchedule[indexA].type;
-    const tempWorkout = newSchedule[indexA].workout;
-    newSchedule[indexA] = { ...newSchedule[indexA], type: newSchedule[indexB].type, workout: newSchedule[indexB].workout };
-    newSchedule[indexB] = { ...newSchedule[indexB], type: tempType, workout: tempWorkout };
-    setPlan({ ...plan, weeklyWorkout: { schedule: newSchedule } });
-  };
   const currentDaySchedule = weeklySchedule?.[selectedDay];
   const workout: WorkoutPlan | null = currentDaySchedule?.workout || plan.workout;
 
@@ -445,11 +436,10 @@ export default function WorkoutScreen() {
         </div>
       </div>
 
-      {/* Edit mode: vertical list with type selector */}
+      {/* Edit mode: tap type tags to change */}
       {editMode && weeklySchedule && (
         <div className="px-6 mb-4">
-          <p className="text-xs text-gray-400 mb-3">Нажми на тип чтобы изменить</p>
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2.5">
             {weeklySchedule.map((day, i) => {
               const types: Array<'strength' | 'cardio' | 'flexibility' | 'rest'> = ['strength', 'cardio', 'flexibility', 'rest'];
               const cycleType = () => {
@@ -463,31 +453,16 @@ export default function WorkoutScreen() {
                 <motion.div
                   key={`${day.day}-edit`}
                   layout
-                  className="flex items-center gap-3 bg-white rounded-xl p-3 border border-gray-200"
+                  className="flex items-center gap-3"
                 >
-                  <span className="text-sm font-medium text-[var(--text)] w-10">{day.day.slice(0, 2)}</span>
-                  <button
+                  <span className="text-xs font-medium text-gray-400 w-7">{day.day.slice(0, 2)}</span>
+                  <motion.button
+                    whileTap={{ scale: 0.95 }}
                     onClick={cycleType}
-                    className={`flex-1 text-left text-sm font-medium px-3 py-1.5 rounded-lg border ${TYPE_COLORS[day.type] || 'bg-gray-50 text-gray-500 border-gray-200'}`}
+                    className={`flex-1 text-sm font-medium px-4 py-2.5 rounded-xl border-2 transition-all active:ring-2 active:ring-[var(--primary)]/30 ${TYPE_COLORS[day.type] || 'bg-gray-50 text-gray-500 border-gray-200'}`}
                   >
                     {TYPE_LABELS[day.type]}
-                  </button>
-                  <div className="flex gap-1">
-                    <button
-                      onClick={() => swapDays(i - 1, i)}
-                      disabled={i === 0}
-                      className="w-7 h-7 rounded-lg bg-gray-100 flex items-center justify-center disabled:opacity-20"
-                    >
-                      <ArrowUp size={12} />
-                    </button>
-                    <button
-                      onClick={() => swapDays(i, i + 1)}
-                      disabled={i === weeklySchedule.length - 1}
-                      className="w-7 h-7 rounded-lg bg-gray-100 flex items-center justify-center disabled:opacity-20"
-                    >
-                      <ArrowDown size={12} />
-                    </button>
-                  </div>
+                  </motion.button>
                 </motion.div>
               );
             })}
