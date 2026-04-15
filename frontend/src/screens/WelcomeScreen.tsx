@@ -95,8 +95,14 @@ function HowItWorksModal({ onClose }: { onClose: () => void }) {
 
 export default function WelcomeScreen() {
   const navigate = useNavigate();
-  const isReturningUser = useAppStore((s) => s.isReturningUser);
+  const { isReturningUser, clearAll } = useAppStore();
   const [showModal, setShowModal] = useState(false);
+
+  const handleReset = () => {
+    clearAll();
+    localStorage.clear();
+    window.location.reload();
+  };
 
   useEffect(() => {
     try {
@@ -136,6 +142,15 @@ export default function WelcomeScreen() {
         >
           Как это работает
         </button>
+
+        {isReturningUser && (
+          <button
+            onClick={handleReset}
+            className="text-gray-400 text-xs mt-4"
+          >
+            Начать заново
+          </button>
+        )}
       </div>
 
       <AnimatePresence>

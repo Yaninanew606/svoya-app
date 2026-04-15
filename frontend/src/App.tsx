@@ -53,7 +53,8 @@ function SessionRestorer({ children }: { children: React.ReactNode }) {
         navigate('/nutrition', { replace: true });
       })
       .catch(() => {
-        // No plan found — show welcome screen as normal
+        // No plan on server — clear local store too
+        setPlan(null);
       })
       .finally(() => setReady(true));
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
