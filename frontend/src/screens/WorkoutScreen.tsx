@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, ChevronUp, Check, Flower2, RotateCcw, Wind, Settings2 } from 'lucide-react';
 import { useAppStore } from '../stores/appStore';
@@ -375,12 +375,13 @@ function WeekStrip({
 
 export default function WorkoutScreen() {
   const navigate = useNavigate();
+  const location = useLocation();
   const plan = useAppStore((s) => s.plan);
   const setPlan = useAppStore((s) => s.setPlan);
   const [mode, setMode] = useState<'overview' | 'active' | 'done'>('overview');
   const [selectedDay, setSelectedDay] = useState(0);
   const [restExercises, setRestExercises] = useState<Exercise[] | null>(null);
-  const [editMode, setEditMode] = useState(false);
+  const [editMode, setEditMode] = useState((location.state as any)?.editMode === true);
   const [swapFrom, setSwapFrom] = useState<number | null>(null);
 
   useEffect(() => {
@@ -410,17 +411,21 @@ export default function WorkoutScreen() {
       setSwapFrom(index);
     } else {
       if (swapFrom !== index && weeklySchedule) {
-        const newSchedule = [...weeklySchedule];
-        const temp = { ...newSchedule[swapFrom] };
+        // Deep clone schedule to ensure React re-renders
+        const newSchedule = weeklySchedule.map(d => ({ ...d }));
+        const fromType = newSchedule[swapFrom].type;
+        const fromWorkout = newSchedule[swapFrom].workout;
         newSchedule[swapFrom] = { ...newSchedule[swapFrom], type: newSchedule[index].type, workout: newSchedule[index].workout };
-        newSchedule[index] = { ...newSchedule[index], type: temp.type, workout: temp.workout };
+        newSchedule[index] = { ...newSchedule[index], type: fromType, workout: fromWorkout };
 
-        if (plan) {
-          setPlan({
-            ...plan,
-            weeklyWorkout: { schedule: newSchedule },
-          });
-        }
+        // Update store with new plan object
+        const updatedPlan = {
+          ...plan,
+          weeklyWorkout: { schedule: newSchedule },
+          // Update today's workout too
+          workout: newSchedule.find(d => d.workout)?.workout || plan.workout,
+        };
+        setPlan(updatedPlan);
       }
       setSwapFrom(null);
     }

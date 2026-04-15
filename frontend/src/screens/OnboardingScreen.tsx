@@ -260,7 +260,7 @@ export default function OnboardingScreen() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.65 }}
-                onClick={() => navigate('/weekly-plan')}
+                onClick={() => navigate('/workout', { state: { editMode: true } })}
                 className="w-full py-2.5 text-sm text-gray-400"
               >
                 Изменить расписание
