@@ -81,11 +81,28 @@ function WeekStrip({ selectedDay, onSelect }: { selectedDay: number; onSelect: (
   );
 }
 
-/* Default meal times based on fasting window or schedule */
-const MEAL_TIMES: Record<string, Record<string, string>> = {
-  standard: { breakfast: '08:00', lunch: '13:00', dinner: '18:30', snack: '16:00' },
-  fasting: { lunch: '12:00', dinner: '18:00', snack: '15:00' },
-};
+/* Calculate meal times from fasting window or defaults */
+function getMealTimes(fastingEnabled: boolean): Record<string, string> {
+  if (!fastingEnabled) {
+    return { breakfast: '08:00', lunch: '13:00', snack: '16:00', dinner: '18:30' };
+  }
+  try {
+    const stored = localStorage.getItem('fasting-window');
+    if (stored) {
+      const { start, end } = JSON.parse(stored);
+      const duration = end - start;
+      const pad = (n: number) => String(Math.floor(n)).padStart(2, '0');
+      // Distribute meals within eating window
+      return {
+        // No breakfast in fasting mode
+        lunch: `${pad(start)}:00`,
+        snack: `${pad(start + duration * 0.45)}:00`,
+        dinner: `${pad(end - 0.5)}:30`,
+      };
+    }
+  } catch {}
+  return { lunch: '12:00', snack: '15:00', dinner: '19:30' };
+}
 
 /* Meal card */
 function MealCard({ mealKey, meal, index, mealTime }: { mealKey: string; meal: Meal; index: number; mealTime?: string }) {
@@ -289,6 +306,7 @@ export default function NutritionScreen() {
   });
   const [showFastingPanel, setShowFastingPanel] = useState(false);
   const [showWaterPanel, setShowWaterPanel] = useState(false);
+  const [, forceUpdate] = useState(0);
 
   const toggleFasting = () => {
     const next = !fastingEnabled;
@@ -374,7 +392,7 @@ export default function NutritionScreen() {
       </div>
 
       {/* Slide panels */}
-      <SlidePanel open={showFastingPanel} onClose={() => setShowFastingPanel(false)}>
+      <SlidePanel open={showFastingPanel} onClose={() => { setShowFastingPanel(false); forceUpdate(n => n + 1); }}>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-bold text-[var(--text)]" style={{ fontFamily: 'Cormorant Garamond, serif' }}>Интервальное голодание</h2>
           <button onClick={() => { setFastingEnabled(false); localStorage.setItem('fasting-enabled', 'false'); setShowFastingPanel(false); }} className="text-xs text-red-400">Выключить</button>
@@ -423,7 +441,7 @@ export default function NutritionScreen() {
         {mealKeys.map((key, index) => {
           const meal: Meal | undefined = meals[key];
           if (!meal) return null;
-          const times = fastingEnabled ? MEAL_TIMES.fasting : MEAL_TIMES.standard;
+          const times = getMealTimes(fastingEnabled);
           const mealTime = times[key as keyof typeof times];
           return <MealCard key={`${selectedDay}-${key}`} mealKey={key} meal={meal} index={index} mealTime={mealTime} />;
         })}
