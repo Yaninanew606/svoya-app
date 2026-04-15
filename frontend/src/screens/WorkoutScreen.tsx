@@ -470,7 +470,14 @@ export default function WorkoutScreen() {
         </div>
       )}
 
-      {/* Cycle phase recommendation */}
+      {/* Weekly schedule strip (normal mode) — always first */}
+      {!editMode && weeklySchedule && (
+        <div className="px-6 mb-4">
+          <WeekStrip schedule={weeklySchedule} selectedDay={selectedDay} onSelect={setSelectedDay} editMode={false} swapFrom={null} />
+        </div>
+      )}
+
+      {/* Cycle phase recommendation — below week strip */}
       {!editMode && plan.cyclePhase && (
         <div className="px-6 mb-4">
           <div
@@ -485,17 +492,10 @@ export default function WorkoutScreen() {
             }}
           >
             <p className="text-sm font-semibold text-[var(--text)] mb-1">
-              Сегодня день {plan.cyclePhase.day} цикла — {plan.cyclePhase.name}
+              День {plan.cyclePhase.day} цикла — {plan.cyclePhase.name}
             </p>
             <p className="text-sm text-gray-500 leading-relaxed">{plan.cyclePhase.recommendation}</p>
           </div>
-        </div>
-      )}
-
-      {/* Weekly schedule strip (normal mode) */}
-      {!editMode && weeklySchedule && (
-        <div className="px-6 mb-4">
-          <WeekStrip schedule={weeklySchedule} selectedDay={selectedDay} onSelect={setSelectedDay} editMode={false} swapFrom={null} />
         </div>
       )}
 
