@@ -36,7 +36,7 @@ export default function GeneratingScreen() {
         const remaining = Math.max(0, 3000 - elapsed);
         setTimeout(() => {
           setPlan(plan);
-          navigate('/nutrition', { replace: true });
+          navigate('/weekly-plan', { replace: true });
         }, remaining);
       })
       .catch(() => {

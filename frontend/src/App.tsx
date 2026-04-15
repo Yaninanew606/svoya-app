@@ -9,6 +9,7 @@ const NutritionScreen = lazy(() => import('./screens/NutritionScreen'));
 const WorkoutScreen = lazy(() => import('./screens/WorkoutScreen'));
 const CheckinScreen = lazy(() => import('./screens/CheckinScreen'));
 const SupportScreen = lazy(() => import('./screens/SupportScreen'));
+const WeeklyPlanScreen = lazy(() => import('./screens/WeeklyPlanScreen'));
 
 function Loading() {
   return (
@@ -28,6 +29,7 @@ export default function App() {
           <Route path="/" element={<WelcomeScreen />} />
           <Route path="/questionnaire" element={<QuestionnaireScreen />} />
           <Route path="/generating" element={<GeneratingScreen />} />
+          <Route path="/weekly-plan" element={<WeeklyPlanScreen />} />
           <Route path="/nutrition" element={<NutritionScreen />} />
           <Route path="/workout" element={<WorkoutScreen />} />
           <Route path="/checkin" element={<CheckinScreen />} />
