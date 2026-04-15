@@ -1,5 +1,6 @@
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { BarChart3, TrendingUp, TrendingDown, Minus, Lightbulb, Download } from 'lucide-react';
+import { BarChart3, TrendingUp, TrendingDown, Minus, Lightbulb, Download, ClipboardCheck } from 'lucide-react';
 import TabBar from '../components/TabBar';
 
 interface CheckinDay {
@@ -98,6 +99,7 @@ const TrendIcon = ({ direction }: { direction: 'up' | 'down' | 'stable' }) => {
 };
 
 export default function AnalyticsScreen() {
+  const navigate = useNavigate();
   const avgMood = (mockHistory.reduce((s, d) => s + d.mood, 0) / mockHistory.length).toFixed(1);
   const sleepCount = countCompliant(mockHistory, 'sleep');
   const nutritionCount = countCompliant(mockHistory, 'nutrition');
@@ -113,10 +115,19 @@ export default function AnalyticsScreen() {
       className="min-h-screen bg-[var(--background)] pb-24"
     >
       <div className="px-5 pt-12 space-y-6">
-        {/* Header */}
-        <div>
-          <h1 className="font-[Cormorant_Garamond] text-3xl font-bold text-[var(--text)]">Аналитика</h1>
-          <p className="text-sm text-gray-500 mt-1">Последние 7 дней</p>
+        {/* Header + Checkin button */}
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="font-[Cormorant_Garamond] text-3xl font-bold text-[var(--text)]">Профиль</h1>
+            <p className="text-sm text-gray-500 mt-1">Последние 7 дней</p>
+          </div>
+          <button
+            onClick={() => navigate('/checkin')}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[var(--primary)] text-white text-sm font-medium"
+          >
+            <ClipboardCheck size={16} />
+            Чек-ин
+          </button>
         </div>
 
         {/* Mood Chart */}
