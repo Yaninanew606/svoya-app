@@ -5,7 +5,6 @@ import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useAppStore } from '../stores/appStore';
 import type { Exercise, WorkoutPlan, DaySchedule } from '../types';
 import TabBar from '../components/TabBar';
-import ExerciseIllustration from '../components/ExerciseIllustration';
 
 const DAY_NAMES = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
 const TYPE_LABELS: Record<string, string> = {
@@ -39,8 +38,7 @@ function ExerciseCard({ exercise }: { exercise: Exercise }) {
   const [showHint, setShowHint] = useState(false);
   return (
     <div className="bg-white rounded-xl p-4 shadow-sm">
-      <ExerciseIllustration name={exercise.name} image={exercise.image} muscleGroup={exercise.muscleGroup} size="small" />
-      <div className="flex items-start justify-between gap-2 mt-3">
+      <div className="flex items-start justify-between gap-2">
         <h4 className="font-bold text-[var(--text)]">{exercise.name}</h4>
         {exercise.isSkippable && (
           <span className="text-[10px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 whitespace-nowrap">
@@ -152,7 +150,6 @@ function StepByStep({ exercises, onFinish }: { exercises: Exercise[]; onFinish: 
       </div>
       <AnimatePresence mode="wait">
         <motion.div key={index} initial={{ x: 80, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: -80, opacity: 0 }} transition={{ duration: 0.25 }} className="flex-1 flex flex-col items-center justify-center px-6 gap-4">
-          <ExerciseIllustration name={ex.name} image={ex.image} muscleGroup={ex.muscleGroup} size="large" />
           <h2 className="text-2xl font-bold text-[var(--text)] text-center">{ex.name}</h2>
           <p className="text-gray-400 text-center">{ex.description}</p>
           {ex.duration ? <Timer seconds={ex.duration} onDone={handleTimerDone} /> : ex.reps && ex.sets ? <p className="text-4xl font-mono text-[var(--primary)]">{ex.reps} x {ex.sets}</p> : null}
