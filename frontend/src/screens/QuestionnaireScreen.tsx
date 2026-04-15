@@ -128,7 +128,7 @@ export default function QuestionnaireScreen() {
   const [step, setStep] = useState(1);
   const [direction, setDirection] = useState(1);
 
-  const [age, setAge] = useState(questionnaire.age ?? 45);
+  const [age, setAge] = useState(questionnaire.age ?? 40);
   const [goals, setGoals] = useState<string[]>(questionnaire.goals ?? []);
   const [fitnessLevel, setFitnessLevel] = useState(questionnaire.fitnessLevel ?? '');
   const [time, setTime] = useState(questionnaire.timeAvailable ?? 0);
@@ -286,14 +286,14 @@ export default function QuestionnaireScreen() {
             </span>
             <input
               type="range"
-              min={40}
+              min={35}
               max={70}
               value={age}
               onChange={(e) => setAge(Number(e.target.value))}
               className="w-full h-2 rounded-full appearance-none bg-[var(--secondary)] accent-[#B5886A] cursor-pointer"
             />
             <div className="flex justify-between w-full text-xs text-[var(--text)] opacity-50">
-              <span>40</span>
+              <span>35</span>
               <span>70</span>
             </div>
           </div>
