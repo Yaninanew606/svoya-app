@@ -84,22 +84,36 @@ export default function WelcomeScreen() {
     >
       {/* Banner background — covers top, seamless with bottom */}
       <div
-        className="flex-1 bg-cover bg-top bg-no-repeat"
+        className="flex-1 bg-cover bg-top bg-no-repeat relative"
         style={{
           backgroundImage: bgLoaded ? 'url(/welcome-bg.jpg)' : 'none',
           minHeight: '58vh',
         }}
-      />
+      >
+        {/* Spinning glow overlay on top of logo */}
+        <style>{`
+          @keyframes welcome-spin { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }
+        `}</style>
+        <div className="absolute inset-0 flex items-center justify-center" style={{ marginTop: '-8%' }}>
+          <div
+            className="rounded-full"
+            style={{
+              width: '42vw',
+              height: '42vw',
+              maxWidth: 180,
+              maxHeight: 180,
+              border: '1.5px solid rgba(212,168,130,0.25)',
+              animation: 'welcome-spin 15s linear infinite',
+            }}
+          />
+        </div>
+      </div>
 
-      {/* Bottom section — color matched to banner edge */}
+      {/* Bottom section */}
       <div
-        className="flex flex-col items-center gap-4 px-8 pb-10 pt-6"
+        className="flex flex-col items-center gap-4 px-8 pb-10 pt-4"
         style={{ backgroundColor: '#262524' }}
       >
-        <p className="text-gray-400 text-sm text-center leading-relaxed">
-          Питание и тренировки,<br />которые понимают твоё здоровье
-        </p>
-
         <motion.button
           whileTap={{ scale: 0.97 }}
           onClick={() => navigate(isReturningUser ? '/nutrition' : '/questionnaire')}
