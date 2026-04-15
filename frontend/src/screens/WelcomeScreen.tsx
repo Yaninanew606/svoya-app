@@ -1,8 +1,61 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Leaf, MessageCircle, ClipboardList, Heart } from 'lucide-react';
+import { MessageCircle, ClipboardList, Heart } from 'lucide-react';
 import { useAppStore } from '../stores/appStore';
+
+/* Brand logo — warm concentric rings with leaf */
+function BrandLogo({ size = 120 }: { size?: number }) {
+  return (
+    <motion.svg
+      width={size}
+      height={size}
+      viewBox="0 0 120 120"
+      fill="none"
+      initial={{ scale: 0.8, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ duration: 0.8, ease: 'easeOut' }}
+    >
+      <defs>
+        <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#B5886A" stopOpacity="0.3" />
+          <stop offset="100%" stopColor="#B5886A" stopOpacity="0" />
+        </radialGradient>
+        <linearGradient id="ring1" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#B5886A" />
+          <stop offset="100%" stopColor="#E8D5C4" />
+        </linearGradient>
+        <linearGradient id="ring2" x1="100%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#E8D5C4" />
+          <stop offset="100%" stopColor="#B5886A" />
+        </linearGradient>
+      </defs>
+      {/* Ambient glow */}
+      <circle cx="60" cy="60" r="55" fill="url(#glow)" />
+      {/* Outer ring */}
+      <circle cx="60" cy="60" r="48" stroke="url(#ring1)" strokeWidth="2" opacity="0.5" />
+      {/* Main ring */}
+      <circle cx="60" cy="60" r="38" stroke="url(#ring2)" strokeWidth="2.5" />
+      {/* Leaf inside */}
+      <path
+        d="M55 72 C55 72 48 58 58 48 C68 38 75 50 75 50 C75 50 68 65 58 68 C55 69 55 72 55 72 Z"
+        stroke="#B5886A"
+        strokeWidth="2"
+        fill="none"
+        strokeLinecap="round"
+      />
+      {/* Leaf vein */}
+      <path
+        d="M58 68 C62 60 65 52 63 48"
+        stroke="#B5886A"
+        strokeWidth="1.5"
+        fill="none"
+        opacity="0.5"
+        strokeLinecap="round"
+      />
+    </motion.svg>
+  );
+}
 
 function HowItWorksModal({ onClose }: { onClose: () => void }) {
   const [slide, setSlide] = useState(0);
@@ -124,16 +177,15 @@ export default function WelcomeScreen() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: 'easeOut' }}
     >
-      <div className="text-center flex flex-col items-center gap-6">
-        <Leaf size={48} className="text-[var(--primary)]" />
+      <div className="text-center flex flex-col items-center gap-5">
+        <BrandLogo size={120} />
 
-        <h1 className="font-[Cormorant_Garamond] text-5xl font-bold text-[var(--text)] flex items-center gap-3">
-          Привет <Leaf size={32} className="text-[var(--primary)] inline-block" />
+        <h1 className="font-[Cormorant_Garamond] text-4xl font-bold text-[var(--text)]">
+          Своя
         </h1>
 
-        <p className="text-[var(--text)] opacity-70 text-base leading-relaxed max-w-xs">
-          Соберу для тебя мягкий план питания и тренировок под твою цель, возраст
-          и самочувствие.
+        <p className="text-[var(--text)] opacity-60 text-sm leading-relaxed max-w-xs">
+          Питание и тренировки, которые понимают твой возраст
         </p>
 
         <button
