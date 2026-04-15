@@ -1,0 +1,28 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Nunito:wght@400;600;700&display=swap');
+@import "tailwindcss";
+
+:root {
+  --primary: #B5886A;
+  --secondary: #E8D5C4;
+  --background: #FAF7F4;
+  --text: #3D2B1F;
+  --accent: #7A9E7E;
+}
+
+body {
+  font-family: 'Nunito', sans-serif;
+  background-color: var(--background);
+  color: var(--text);
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Cormorant Garamond', serif;
+}
+
+#root {
+  min-height: 100vh;
+  width: 100%;
+}

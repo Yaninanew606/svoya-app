@@ -1,0 +1,43 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id            String    @id @default(cuid())
+  telegramId    BigInt    @unique
+  createdAt     DateTime  @default(now())
+  questionnaire Json?
+  currentPlan   Json?
+  streak        Int       @default(0)
+  lastActive    DateTime?
+  difficulty    String    @default("medium")
+  checkins      Checkin[]
+  plans         Plan[]
+}
+
+model Checkin {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  date      DateTime
+  mood      Int
+  sleep     String
+  nutrition String
+  workout   String
+  status    String
+  createdAt DateTime @default(now())
+}
+
+model Plan {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  date      DateTime
+  nutrition Json
+  workout   Json
+  createdAt DateTime @default(now())
+}
