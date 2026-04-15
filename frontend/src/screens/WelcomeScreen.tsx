@@ -51,6 +51,13 @@ export default function WelcomeScreen() {
   const navigate = useNavigate();
   const { isReturningUser, clearAll } = useAppStore();
   const [showModal, setShowModal] = useState(false);
+  const [bgLoaded, setBgLoaded] = useState(false);
+
+  useEffect(() => {
+    const img = new Image();
+    img.src = '/welcome-bg.jpg';
+    img.onload = () => setBgLoaded(true);
+  }, []);
 
   const handleReset = () => {
     clearAll();
@@ -70,23 +77,24 @@ export default function WelcomeScreen() {
   return (
     <motion.div
       className="min-h-screen relative flex flex-col"
+      style={{ backgroundColor: '#262524' }}
       initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
+      animate={{ opacity: bgLoaded ? 1 : 0 }}
+      transition={{ duration: 0.6 }}
     >
-      {/* Banner background — covers top 65% */}
+      {/* Banner background — covers top, seamless with bottom */}
       <div
-        className="flex-1 bg-cover bg-center bg-no-repeat"
+        className="flex-1 bg-cover bg-top bg-no-repeat"
         style={{
-          backgroundImage: 'url(/welcome-bg.jpg)',
-          minHeight: '55vh',
+          backgroundImage: bgLoaded ? 'url(/welcome-bg.jpg)' : 'none',
+          minHeight: '58vh',
         }}
       />
 
-      {/* Bottom section with buttons */}
+      {/* Bottom section — color matched to banner edge */}
       <div
         className="flex flex-col items-center gap-4 px-8 pb-10 pt-6"
-        style={{ background: 'linear-gradient(180deg, #1A1A1A 0%, #2A2420 100%)' }}
+        style={{ backgroundColor: '#262524' }}
       >
         <p className="text-gray-400 text-sm text-center leading-relaxed">
           Питание и тренировки,<br />которые понимают твоё здоровье
