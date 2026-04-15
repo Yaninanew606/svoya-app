@@ -524,22 +524,25 @@ export default function WorkoutScreen() {
             {workout.focus && <span className="text-sm text-gray-400">{workout.focus}</span>}
           </div>
 
-          <div className="px-6 flex flex-col gap-2">
-            <CollapsibleSection title="Разминка" exercises={workout.phases.warmup} defaultOpen />
-            <CollapsibleSection title="Основной блок" exercises={workout.phases.main} defaultOpen />
-            <CollapsibleSection title="Заминка" exercises={workout.phases.cooldown} />
-          </div>
-
-          <div className="px-6 mt-8 flex flex-col gap-3">
+          {/* Main action — immediately visible */}
+          <div className="px-6 mb-4 flex flex-col gap-2">
             <button onClick={() => setMode('active')} className="w-full py-3.5 rounded-2xl bg-[var(--primary)] text-white font-semibold text-lg">
               Начать тренировку
             </button>
-            <button onClick={() => navigate('/')} className="text-sm text-gray-400 mt-2 text-center">
-              Пропустить сегодня
-            </button>
-            <button onClick={() => navigate('/generating', { state: { difficulty: 'easy', reason: 'pain' } })} className="text-sm text-red-400 text-center">
-              Мне больно / дискомфорт
-            </button>
+            <div className="flex justify-center gap-4">
+              <button onClick={() => navigate('/')} className="text-xs text-gray-400">
+                Пропустить
+              </button>
+              <button onClick={() => navigate('/generating', { state: { difficulty: 'easy', reason: 'pain' } })} className="text-xs text-red-400">
+                Мне больно
+              </button>
+            </div>
+          </div>
+
+          <div className="px-6 flex flex-col gap-2">
+            <CollapsibleSection title="Разминка" exercises={workout.phases.warmup} />
+            <CollapsibleSection title="Основной блок" exercises={workout.phases.main} />
+            <CollapsibleSection title="Заминка" exercises={workout.phases.cooldown} />
           </div>
         </>
       )}
