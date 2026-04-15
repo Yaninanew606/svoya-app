@@ -82,32 +82,52 @@ function WeekStrip({ selectedDay, onSelect }: { selectedDay: number; onSelect: (
 }
 
 /* Calculate meal times from fasting window or defaults */
-function getMealTimes(fastingEnabled: boolean): Record<string, string> {
+function getMealTimes(fastingEnabled: boolean): { times: Record<string, string>; hideMeals: string[] } {
   if (!fastingEnabled) {
-    return { breakfast: '08:00', lunch: '13:00', snack: '16:00', dinner: '18:30' };
+    return {
+      times: { breakfast: '08:00', lunch: '13:00', snack: '16:00', dinner: '18:30' },
+      hideMeals: [],
+    };
   }
+  let start = 12, end = 20;
   try {
     const stored = localStorage.getItem('fasting-window');
     if (stored) {
-      const { start, end } = JSON.parse(stored);
-      const duration = end - start;
-      const pad = (n: number) => String(Math.floor(n)).padStart(2, '0');
-      // Distribute meals within eating window
-      return {
-        // No breakfast in fasting mode
-        lunch: `${pad(start)}:00`,
-        snack: `${pad(start + duration * 0.45)}:00`,
-        dinner: `${pad(end - 0.5)}:30`,
-      };
+      const parsed = JSON.parse(stored);
+      start = parsed.start;
+      end = parsed.end;
     }
   } catch {}
-  return { lunch: '12:00', snack: '15:00', dinner: '19:30' };
+  const duration = end - start;
+  const pad = (n: number) => String(Math.floor(n)).padStart(2, '0');
+
+  if (duration <= 6) {
+    // Short window (18:6 or less) — only 2 meals, no snack, no breakfast
+    return {
+      times: {
+        lunch: `${pad(start)}:00`,
+        dinner: `${pad(end - 1)}:00`,
+      },
+      hideMeals: ['breakfast', 'snack'],
+    };
+  }
+  // 8+ hour window — 3 meals, no snack, no breakfast
+  const mid = start + duration / 2;
+  return {
+    times: {
+      lunch: `${pad(start)}:00`,
+      dinner: `${pad(mid)}:00`,
+      snack: `${pad(end - 1)}:00`, // это третий полноценный приём, не перекус
+    },
+    hideMeals: ['breakfast'],
+  };
 }
 
 /* Meal card */
-function MealCard({ mealKey, meal, index, mealTime }: { mealKey: string; meal: Meal; index: number; mealTime?: string }) {
+function MealCard({ mealKey, meal, index, mealTime, labelOverride }: { mealKey: string; meal: Meal; index: number; mealTime?: string; labelOverride?: string }) {
   const [showIngredients, setShowIngredients] = useState(false);
-  const { icon: MealIcon, label } = mealLabels[mealKey];
+  const { icon: MealIcon, label: defaultLabel } = mealLabels[mealKey];
+  const label = labelOverride || defaultLabel;
 
   return (
     <motion.div
@@ -441,9 +461,14 @@ export default function NutritionScreen() {
         {mealKeys.map((key, index) => {
           const meal: Meal | undefined = meals[key];
           if (!meal) return null;
-          const times = getMealTimes(fastingEnabled);
+          const { times, hideMeals } = getMealTimes(fastingEnabled);
+          if (hideMeals.includes(key)) return null;
           const mealTime = times[key as keyof typeof times];
-          return <MealCard key={`${selectedDay}-${key}`} mealKey={key} meal={meal} index={index} mealTime={mealTime} />;
+          // Rename "snack" to full meal label in fasting mode
+          const labelOverride = fastingEnabled && key === 'snack' ? 'Третий приём' : undefined;
+          // Rename first meal
+          const firstMealLabel = fastingEnabled && key === 'lunch' ? 'Первый приём' : undefined;
+          return <MealCard key={`${selectedDay}-${key}`} mealKey={key} meal={meal} index={index} mealTime={mealTime} labelOverride={firstMealLabel || labelOverride} />;
         })}
       </div>
 
