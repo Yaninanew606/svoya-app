@@ -4,56 +4,76 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, ClipboardList, Heart } from 'lucide-react';
 import { useAppStore } from '../stores/appStore';
 
-/* Brand logo — warm concentric rings with leaf */
-function BrandLogo({ size = 120 }: { size?: number }) {
+/* Brand logo — matching banner style: warm rings + leaf, animated */
+function BrandLogo({ size = 140 }: { size?: number }) {
   return (
-    <motion.svg
-      width={size}
-      height={size}
-      viewBox="0 0 120 120"
-      fill="none"
+    <motion.div
       initial={{ scale: 0.8, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
       transition={{ duration: 0.8, ease: 'easeOut' }}
+      className="relative"
+      style={{ width: size, height: size }}
     >
-      <defs>
-        <radialGradient id="glow" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#B5886A" stopOpacity="0.3" />
-          <stop offset="100%" stopColor="#B5886A" stopOpacity="0" />
-        </radialGradient>
-        <linearGradient id="ring1" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#B5886A" />
-          <stop offset="100%" stopColor="#E8D5C4" />
-        </linearGradient>
-        <linearGradient id="ring2" x1="100%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#E8D5C4" />
-          <stop offset="100%" stopColor="#B5886A" />
-        </linearGradient>
-      </defs>
-      {/* Ambient glow */}
-      <circle cx="60" cy="60" r="55" fill="url(#glow)" />
-      {/* Outer ring */}
-      <circle cx="60" cy="60" r="48" stroke="url(#ring1)" strokeWidth="2" opacity="0.5" />
-      {/* Main ring */}
-      <circle cx="60" cy="60" r="38" stroke="url(#ring2)" strokeWidth="2.5" />
-      {/* Leaf inside */}
-      <path
-        d="M55 72 C55 72 48 58 58 48 C68 38 75 50 75 50 C75 50 68 65 58 68 C55 69 55 72 55 72 Z"
-        stroke="#B5886A"
-        strokeWidth="2"
-        fill="none"
-        strokeLinecap="round"
-      />
-      {/* Leaf vein */}
-      <path
-        d="M58 68 C62 60 65 52 63 48"
-        stroke="#B5886A"
-        strokeWidth="1.5"
-        fill="none"
-        opacity="0.5"
-        strokeLinecap="round"
-      />
-    </motion.svg>
+      <svg width={size} height={size} viewBox="0 0 140 140" fill="none">
+        <defs>
+          <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#B5886A" stopOpacity="0.25" />
+            <stop offset="70%" stopColor="#B5886A" stopOpacity="0.08" />
+            <stop offset="100%" stopColor="#B5886A" stopOpacity="0" />
+          </radialGradient>
+          <linearGradient id="outerRing" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#E8D5C4" />
+            <stop offset="50%" stopColor="#B5886A" />
+            <stop offset="100%" stopColor="#E8D5C4" />
+          </linearGradient>
+          <linearGradient id="innerRing" x1="100%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#B5886A" />
+            <stop offset="100%" stopColor="#D4A882" />
+          </linearGradient>
+        </defs>
+
+        {/* Glow background */}
+        <circle cx="70" cy="70" r="65" fill="url(#glow)" />
+
+        {/* Outer ring — rotating */}
+        <g style={{ transformOrigin: '70px 70px', animation: 'spin-slow 20s linear infinite' }}>
+          <circle cx="70" cy="70" r="56" stroke="url(#outerRing)" strokeWidth="2" opacity="0.4" />
+        </g>
+
+        {/* Inner ring — counter-rotating */}
+        <g style={{ transformOrigin: '70px 70px', animation: 'spin-slow 30s linear infinite reverse' }}>
+          <circle cx="70" cy="70" r="44" stroke="url(#innerRing)" strokeWidth="2.5" />
+        </g>
+
+        {/* Leaf — bottom-left inside inner ring */}
+        <g style={{ transformOrigin: '70px 70px' }}>
+          <path
+            d="M58 88 C58 88 45 68 60 52 C72 40 82 55 82 55 C82 55 72 78 60 82 C56 83 58 88 58 88 Z"
+            stroke="#B5886A"
+            strokeWidth="2"
+            fill="none"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          {/* Leaf center vein */}
+          <path
+            d="M60 82 Q66 68 68 55"
+            stroke="#B5886A"
+            strokeWidth="1.5"
+            fill="none"
+            opacity="0.4"
+            strokeLinecap="round"
+          />
+        </g>
+      </svg>
+
+      <style>{`
+        @keyframes spin-slow {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
+    </motion.div>
   );
 }
 
