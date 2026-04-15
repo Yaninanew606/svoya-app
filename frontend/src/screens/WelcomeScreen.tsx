@@ -4,71 +4,66 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, ClipboardList, Heart } from 'lucide-react';
 import { useAppStore } from '../stores/appStore';
 
-/* Brand logo — matching banner style: warm rings + leaf, animated */
-function BrandLogo({ size = 140 }: { size?: number }) {
+/* Brand logo — warm rings with leaf, CSS-animated rotation */
+function BrandLogo({ size = 150 }: { size?: number }) {
   return (
     <motion.div
       initial={{ scale: 0.8, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
       transition={{ duration: 0.8, ease: 'easeOut' }}
-      className="relative"
+      className="relative flex items-center justify-center"
       style={{ width: size, height: size }}
     >
-      <svg width={size} height={size} viewBox="0 0 140 140" fill="none">
-        <defs>
-          <radialGradient id="glow" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#B5886A" stopOpacity="0.25" />
-            <stop offset="70%" stopColor="#B5886A" stopOpacity="0.08" />
-            <stop offset="100%" stopColor="#B5886A" stopOpacity="0" />
-          </radialGradient>
-          <linearGradient id="outerRing" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#E8D5C4" />
-            <stop offset="50%" stopColor="#B5886A" />
-            <stop offset="100%" stopColor="#E8D5C4" />
-          </linearGradient>
-          <linearGradient id="innerRing" x1="100%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#B5886A" />
-            <stop offset="100%" stopColor="#D4A882" />
-          </linearGradient>
-        </defs>
+      {/* Glow */}
+      <div
+        className="absolute rounded-full"
+        style={{
+          width: size * 0.9,
+          height: size * 0.9,
+          background: 'radial-gradient(circle, rgba(181,136,106,0.2) 0%, rgba(181,136,106,0) 70%)',
+        }}
+      />
 
-        {/* Glow background */}
-        <circle cx="70" cy="70" r="65" fill="url(#glow)" />
+      {/* Outer ring — rotating clockwise */}
+      <div
+        className="absolute rounded-full border-2 border-[#B5886A]/40 animate-[logo-spin_20s_linear_infinite]"
+        style={{ width: size * 0.82, height: size * 0.82 }}
+      />
 
-        {/* Outer ring — rotating */}
-        <g style={{ transformOrigin: '70px 70px', animation: 'spin-slow 20s linear infinite' }}>
-          <circle cx="70" cy="70" r="56" stroke="url(#outerRing)" strokeWidth="2" opacity="0.4" />
-        </g>
+      {/* Inner ring — rotating counter-clockwise */}
+      <div
+        className="absolute rounded-full border-[2.5px] border-[#B5886A] animate-[logo-spin_30s_linear_infinite_reverse]"
+        style={{ width: size * 0.64, height: size * 0.64 }}
+      />
 
-        {/* Inner ring — counter-rotating */}
-        <g style={{ transformOrigin: '70px 70px', animation: 'spin-slow 30s linear infinite reverse' }}>
-          <circle cx="70" cy="70" r="44" stroke="url(#innerRing)" strokeWidth="2.5" />
-        </g>
-
-        {/* Leaf — bottom-left inside inner ring */}
-        <g style={{ transformOrigin: '70px 70px' }}>
-          <path
-            d="M58 88 C58 88 45 68 60 52 C72 40 82 55 82 55 C82 55 72 78 60 82 C56 83 58 88 58 88 Z"
-            stroke="#B5886A"
-            strokeWidth="2"
-            fill="none"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          {/* Leaf center vein */}
-          <path
-            d="M60 82 Q66 68 68 55"
-            stroke="#B5886A"
-            strokeWidth="1.5"
-            fill="none"
-            opacity="0.4"
-            strokeLinecap="round"
-          />
-        </g>
+      {/* Leaf SVG — static center */}
+      <svg
+        width={size * 0.35}
+        height={size * 0.35}
+        viewBox="0 0 50 50"
+        fill="none"
+        className="relative z-10"
+      >
+        <path
+          d="M20 42 C20 42 10 28 22 16 C32 6 40 18 40 18 C40 18 32 36 22 38 C19 39 20 42 20 42 Z"
+          stroke="#B5886A"
+          strokeWidth="2.5"
+          fill="none"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M22 38 Q28 28 29 18"
+          stroke="#B5886A"
+          strokeWidth="1.5"
+          fill="none"
+          opacity="0.5"
+          strokeLinecap="round"
+        />
       </svg>
 
       <style>{`
-        @keyframes spin-slow {
+        @keyframes logo-spin {
           from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }
         }
