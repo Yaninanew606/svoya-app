@@ -15,6 +15,7 @@ planRoutes.post('/generate-plan', async (req, res) => {
     const q = questionnaire || req.body;
 
     // Find or create user
+    const tgFirstName = req.telegramUser!.first_name || '';
     const user = await prisma.user.upsert({
       where: { telegramId },
       update: {
@@ -70,6 +71,7 @@ planRoutes.post('/generate-plan', async (req, res) => {
       workout: plan.workout,
       weeklyWorkout: plan.weeklyWorkout,
       message: plan.message,
+      firstName: tgFirstName,
     });
   } catch (err) {
     console.error('[generate-plan] Error:', err);
@@ -108,6 +110,7 @@ planRoutes.get('/plan/today', async (req, res) => {
         ...(user.currentPlan as any),
         streak: user.streak,
         questionnaire: user.questionnaire,
+        firstName: req.telegramUser!.first_name || '',
       });
       return;
     }

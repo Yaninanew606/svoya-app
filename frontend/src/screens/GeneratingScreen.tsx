@@ -31,7 +31,8 @@ export default function GeneratingScreen() {
         questionnaire: questionnaire as QuestionnaireData,
         preferences: { nutritionMode },
       })
-      .then((plan) => {
+      .then((plan: any) => {
+        if (plan.firstName) localStorage.setItem('tg_first_name', plan.firstName);
         const elapsed = Date.now() - startTime;
         const remaining = Math.max(0, 3000 - elapsed);
         setTimeout(() => {

@@ -445,38 +445,52 @@ export default function WorkoutScreen() {
         </div>
       </div>
 
-      {/* Edit mode: vertical list with arrow buttons */}
+      {/* Edit mode: vertical list with type selector */}
       {editMode && weeklySchedule && (
         <div className="px-6 mb-4">
+          <p className="text-xs text-gray-400 mb-3">Нажми на тип чтобы изменить</p>
           <div className="flex flex-col gap-2">
-            {weeklySchedule.map((day, i) => (
-              <motion.div
-                key={`${day.day}-${day.type}`}
-                layout
-                className={`flex items-center gap-3 bg-white rounded-xl p-3 border ${TYPE_COLORS[day.type]?.replace('text-', 'border-') || 'border-gray-200'}`}
-              >
-                <span className="text-sm font-medium text-[var(--text)] w-8">{day.day.slice(0, 2)}</span>
-                <span className={`text-sm flex-1 ${TYPE_COLORS[day.type]?.split(' ')[1] || 'text-gray-500'}`}>
-                  {TYPE_LABELS[day.type]}
-                </span>
-                <div className="flex gap-1">
+            {weeklySchedule.map((day, i) => {
+              const types: Array<'strength' | 'cardio' | 'flexibility' | 'rest'> = ['strength', 'cardio', 'flexibility', 'rest'];
+              const cycleType = () => {
+                const currentIdx = types.indexOf(day.type as any);
+                const nextType = types[(currentIdx + 1) % types.length];
+                const newSchedule = weeklySchedule.map(d => ({ ...d }));
+                newSchedule[i] = { ...newSchedule[i], type: nextType, workout: nextType === 'rest' ? null : (day.workout || plan.workout) };
+                setPlan({ ...plan, weeklyWorkout: { schedule: newSchedule } });
+              };
+              return (
+                <motion.div
+                  key={`${day.day}-edit`}
+                  layout
+                  className="flex items-center gap-3 bg-white rounded-xl p-3 border border-gray-200"
+                >
+                  <span className="text-sm font-medium text-[var(--text)] w-10">{day.day.slice(0, 2)}</span>
                   <button
-                    onClick={() => swapDays(i - 1, i)}
-                    disabled={i === 0}
-                    className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center disabled:opacity-20"
+                    onClick={cycleType}
+                    className={`flex-1 text-left text-sm font-medium px-3 py-1.5 rounded-lg border ${TYPE_COLORS[day.type] || 'bg-gray-50 text-gray-500 border-gray-200'}`}
                   >
-                    <ArrowUp size={14} />
+                    {TYPE_LABELS[day.type]}
                   </button>
-                  <button
-                    onClick={() => swapDays(i, i + 1)}
-                    disabled={i === weeklySchedule.length - 1}
-                    className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center disabled:opacity-20"
-                  >
-                    <ArrowDown size={14} />
-                  </button>
-                </div>
-              </motion.div>
-            ))}
+                  <div className="flex gap-1">
+                    <button
+                      onClick={() => swapDays(i - 1, i)}
+                      disabled={i === 0}
+                      className="w-7 h-7 rounded-lg bg-gray-100 flex items-center justify-center disabled:opacity-20"
+                    >
+                      <ArrowUp size={12} />
+                    </button>
+                    <button
+                      onClick={() => swapDays(i, i + 1)}
+                      disabled={i === weeklySchedule.length - 1}
+                      className="w-7 h-7 rounded-lg bg-gray-100 flex items-center justify-center disabled:opacity-20"
+                    >
+                      <ArrowDown size={12} />
+                    </button>
+                  </div>
+                </motion.div>
+              );
+            })}
           </div>
         </div>
       )}

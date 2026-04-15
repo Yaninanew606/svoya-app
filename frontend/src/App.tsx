@@ -52,8 +52,8 @@ function SessionRestorer({ children }: { children: React.ReactNode }) {
     // If local store already has a plan, verify with server
     if (plan) {
       api.getTodayPlan()
-        .then(() => {
-          // Server has plan too — go to nutrition
+        .then((data: any) => {
+          if (data.firstName) localStorage.setItem('tg_first_name', data.firstName);
           navigate('/nutrition', { replace: true });
         })
         .catch(() => {
@@ -74,6 +74,7 @@ function SessionRestorer({ children }: { children: React.ReactNode }) {
           weeklyWorkout: data.weeklyWorkout,
           message: data.message || '',
         });
+        if (data.firstName) localStorage.setItem('tg_first_name', data.firstName);
         if (data.streak) setStreak(data.streak);
         if (data.questionnaire) setQuestionnaire(data.questionnaire);
         navigate('/nutrition', { replace: true });
