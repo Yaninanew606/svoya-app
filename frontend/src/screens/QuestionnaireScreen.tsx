@@ -47,11 +47,11 @@ const TIME_OPTIONS = [
 
 const FOOD_OPTIONS = [
   { id: 'no-restrictions', label: 'Без ограничений — ем все' },
-  { id: 'no-meat', label: 'Не ем мясо' },
-  { id: 'no-dairy', label: 'Не ем молочное' },
-  { id: 'no-gluten', label: 'Без глютена' },
-  { id: 'low-sugar', label: 'Минимум сахара' },
-  { id: 'intermittent-fasting', label: 'Интервальное голодание' },
+  { id: 'no_meat', label: 'Не ем мясо' },
+  { id: 'no_dairy', label: 'Не ем молочное' },
+  { id: 'no_gluten', label: 'Без глютена' },
+  { id: 'low_sugar', label: 'Минимум сахара' },
+  { id: 'intermittent_fasting', label: 'Интервальное голодание' },
 ];
 
 const SCHEDULE_OPTIONS = [
