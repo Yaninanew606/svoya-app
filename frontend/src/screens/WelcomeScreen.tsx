@@ -31,29 +31,15 @@ function BrandLogo() {
         }}
       />
 
-      {/* Outer ring — thick, warm gradient, rotating */}
-      <div
-        className="absolute rounded-full ring-outer"
-        style={{
-          width: 130,
-          height: 130,
-          border: '3px solid transparent',
-          borderImage: 'linear-gradient(135deg, #E8D5C4, #B5886A, #E8D5C4) 1',
-          borderRadius: '50%',
-          borderColor: '#C4996F',
-          opacity: 0.6,
-        }}
-      />
+      {/* Outer ring — rotating */}
+      <div className="absolute ring-outer" style={{ width: 130, height: 130 }}>
+        <div className="w-full h-full rounded-full" style={{ border: '2.5px solid rgba(196,153,111,0.5)' }} />
+      </div>
 
-      {/* Inner ring — thicker, brighter, counter-rotating */}
-      <div
-        className="absolute rounded-full ring-inner"
-        style={{
-          width: 100,
-          height: 100,
-          border: '3px solid #B5886A',
-        }}
-      />
+      {/* Inner ring — counter-rotating */}
+      <div className="absolute ring-inner" style={{ width: 100, height: 100 }}>
+        <div className="w-full h-full rounded-full" style={{ border: '3px solid #B5886A' }} />
+      </div>
 
       {/* Leaf — positioned lower-right inside ring, like on banner */}
       <svg
