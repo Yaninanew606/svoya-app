@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Sunrise, Sun, Moon, Apple, ShoppingCart, Copy, Download,
-  Clock, ChevronDown, ChevronUp, Timer,
+  Clock, ChevronDown, ChevronUp, Timer, Droplets,
 } from 'lucide-react';
 import { useAppStore } from '../stores/appStore';
 import TabBar from '../components/TabBar';
@@ -81,8 +81,14 @@ function WeekStrip({ selectedDay, onSelect }: { selectedDay: number; onSelect: (
   );
 }
 
+/* Default meal times based on fasting window or schedule */
+const MEAL_TIMES: Record<string, Record<string, string>> = {
+  standard: { breakfast: '08:00', lunch: '13:00', dinner: '18:30', snack: '16:00' },
+  fasting: { lunch: '12:00', dinner: '18:00', snack: '15:00' },
+};
+
 /* Meal card */
-function MealCard({ mealKey, meal, index }: { mealKey: string; meal: Meal; index: number }) {
+function MealCard({ mealKey, meal, index, mealTime }: { mealKey: string; meal: Meal; index: number; mealTime?: string }) {
   const [showIngredients, setShowIngredients] = useState(false);
   const { icon: MealIcon, label } = mealLabels[mealKey];
 
@@ -93,9 +99,14 @@ function MealCard({ mealKey, meal, index }: { mealKey: string; meal: Meal; index
       transition={{ delay: index * 0.08, duration: 0.35 }}
       className="bg-white rounded-2xl p-5 shadow-sm"
     >
-      <div className="flex items-center gap-2 mb-2">
-        <MealIcon size={20} className="text-[var(--primary)]" />
-        <span className="font-bold text-[var(--text)]">{label}</span>
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-2">
+          <MealIcon size={20} className="text-[var(--primary)]" />
+          <span className="font-bold text-[var(--text)]">{label}</span>
+        </div>
+        {mealTime && (
+          <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-lg">{mealTime}</span>
+        )}
       </div>
 
       <p className="font-semibold text-[var(--text)] mb-1">{meal.name}</p>
@@ -138,6 +149,36 @@ function MealCard({ mealKey, meal, index }: { mealKey: string; meal: Meal; index
         </div>
       )}
     </motion.div>
+  );
+}
+
+/* Slide panel from right */
+function SlidePanel({ open, onClose, children }: { open: boolean; onClose: () => void; children: React.ReactNode }) {
+  return (
+    <AnimatePresence>
+      {open && (
+        <>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="fixed inset-0 bg-black/30 z-40"
+          />
+          <motion.div
+            initial={{ x: '100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '100%' }}
+            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+            className="fixed top-0 right-0 h-full w-[85%] max-w-sm bg-[var(--background)] z-50 shadow-2xl overflow-y-auto"
+          >
+            <div className="p-6 pt-12">
+              {children}
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
   );
 }
 
@@ -246,11 +287,14 @@ export default function NutritionScreen() {
     const stored = localStorage.getItem('fasting-enabled');
     return stored !== null ? stored === 'true' : !!questionnaireFasting;
   });
+  const [showFastingPanel, setShowFastingPanel] = useState(false);
+  const [showWaterPanel, setShowWaterPanel] = useState(false);
 
   const toggleFasting = () => {
     const next = !fastingEnabled;
     setFastingEnabled(next);
     localStorage.setItem('fasting-enabled', String(next));
+    if (next) setShowFastingPanel(true);
   };
   const firstName = useMemo(() => getTelegramFirstName(), []);
   const motivation = useMemo(() => MOTIVATIONS[Math.floor(Math.random() * MOTIVATIONS.length)], []);
@@ -307,28 +351,41 @@ export default function NutritionScreen() {
         <WeekStrip selectedDay={selectedDay} onSelect={setSelectedDay} />
       </div>
 
-      {/* Fasting toggle + window */}
-      <div className="px-6 mb-4">
-        {fastingEnabled ? (
-          <FastingWindow dailySchedule={questionnaire.dailySchedule} />
-        ) : (
-          <button
-            onClick={toggleFasting}
-            className="w-full flex items-center gap-3 bg-white rounded-2xl p-4 shadow-sm text-left"
-          >
-            <Timer size={18} className="text-gray-400" />
-            <div className="flex-1">
-              <span className="text-sm font-medium text-[var(--text)]">Интервальное голодание</span>
-              <span className="text-xs text-gray-400 block">Нажми чтобы настроить окно приёма пищи</span>
-            </div>
-          </button>
-        )}
+      {/* Quick action icons */}
+      <div className="px-6 mb-4 flex gap-2">
+        <button
+          onClick={() => fastingEnabled ? setShowFastingPanel(true) : toggleFasting()}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
+            fastingEnabled
+              ? 'bg-[var(--accent)]/15 text-[var(--accent)] border border-[var(--accent)]/30'
+              : 'bg-white border border-gray-200 text-gray-500'
+          }`}
+        >
+          <Timer size={16} />
+          {fastingEnabled ? 'Голодание' : 'ИГ'}
+        </button>
+        <button
+          onClick={() => setShowWaterPanel(true)}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-gray-200 text-sm font-medium text-gray-500"
+        >
+          <Droplets size={16} />
+          Вода
+        </button>
       </div>
 
-      {/* Water tracker */}
-      <div className="px-6 mb-4">
+      {/* Slide panels */}
+      <SlidePanel open={showFastingPanel} onClose={() => setShowFastingPanel(false)}>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-bold text-[var(--text)]" style={{ fontFamily: 'Cormorant Garamond, serif' }}>Интервальное голодание</h2>
+          <button onClick={() => { setFastingEnabled(false); localStorage.setItem('fasting-enabled', 'false'); setShowFastingPanel(false); }} className="text-xs text-red-400">Выключить</button>
+        </div>
+        <FastingWindow dailySchedule={questionnaire.dailySchedule} />
+      </SlidePanel>
+
+      <SlidePanel open={showWaterPanel} onClose={() => setShowWaterPanel(false)}>
+        <h2 className="text-lg font-bold text-[var(--text)] mb-4" style={{ fontFamily: 'Cormorant Garamond, serif' }}>Трекер воды</h2>
         <WaterTracker />
-      </div>
+      </SlidePanel>
 
       {/* Selected day label */}
       <div className="px-6 mb-4">
@@ -366,7 +423,9 @@ export default function NutritionScreen() {
         {mealKeys.map((key, index) => {
           const meal: Meal | undefined = meals[key];
           if (!meal) return null;
-          return <MealCard key={`${selectedDay}-${key}`} mealKey={key} meal={meal} index={index} />;
+          const times = fastingEnabled ? MEAL_TIMES.fasting : MEAL_TIMES.standard;
+          const mealTime = times[key as keyof typeof times];
+          return <MealCard key={`${selectedDay}-${key}`} mealKey={key} meal={meal} index={index} mealTime={mealTime} />;
         })}
       </div>
 
