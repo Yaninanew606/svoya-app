@@ -277,6 +277,16 @@ export default function NutritionScreen() {
         })}
       </div>
 
+      {/* Food diary link */}
+      <div className="px-6 mb-4">
+        <button
+          onClick={() => navigate('/diary')}
+          className="w-full py-3 rounded-2xl border border-[var(--primary)] text-[var(--primary)] font-semibold text-sm transition-colors hover:bg-[var(--primary)]/5"
+        >
+          Дневник питания
+        </button>
+      </div>
+
       {/* Weekly grocery list */}
       <div className="px-6 mb-6">
         <GroceryList items={weeklyIngredients} />

@@ -1,10 +1,11 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import { UtensilsCrossed, Dumbbell, ClipboardCheck } from 'lucide-react';
+import { UtensilsCrossed, Dumbbell, ClipboardCheck, BarChart3 } from 'lucide-react';
 
 const tabs = [
   { path: '/nutrition', label: 'Питание', icon: UtensilsCrossed },
   { path: '/workout', label: 'Тренировка', icon: Dumbbell },
   { path: '/checkin', label: 'Чек-ин', icon: ClipboardCheck },
+  { path: '/analytics', label: 'Аналитика', icon: BarChart3 },
 ] as const;
 
 export default function TabBar() {
