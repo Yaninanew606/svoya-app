@@ -4,70 +4,83 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, ClipboardList, Heart } from 'lucide-react';
 import { useAppStore } from '../stores/appStore';
 
-/* Brand logo — warm rings with leaf, CSS-animated rotation */
-function BrandLogo({ size = 150 }: { size?: number }) {
+/* Brand logo — matching banner exactly: thick warm rings, glow, leaf */
+function BrandLogo() {
   return (
     <motion.div
       initial={{ scale: 0.8, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
       transition={{ duration: 0.8, ease: 'easeOut' }}
       className="relative flex items-center justify-center"
-      style={{ width: size, height: size }}
+      style={{ width: 160, height: 160 }}
     >
-      {/* Glow */}
+      <style>{`
+        @keyframes logo-cw { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }
+        @keyframes logo-ccw { from { transform: rotate(360deg) } to { transform: rotate(0deg) } }
+        .ring-outer { animation: logo-cw 25s linear infinite; }
+        .ring-inner { animation: logo-ccw 35s linear infinite; }
+      `}</style>
+
+      {/* Glow — warm ambient light */}
       <div
         className="absolute rounded-full"
         style={{
-          width: size * 0.9,
-          height: size * 0.9,
-          background: 'radial-gradient(circle, rgba(181,136,106,0.2) 0%, rgba(181,136,106,0) 70%)',
+          width: 150,
+          height: 150,
+          background: 'radial-gradient(circle, rgba(181,136,106,0.35) 0%, rgba(232,213,196,0.15) 40%, transparent 70%)',
         }}
       />
 
-      {/* Outer ring — rotating clockwise */}
+      {/* Outer ring — thick, warm gradient, rotating */}
       <div
-        className="absolute rounded-full border-2 border-[#B5886A]/40 animate-[logo-spin_20s_linear_infinite]"
-        style={{ width: size * 0.82, height: size * 0.82 }}
+        className="absolute rounded-full ring-outer"
+        style={{
+          width: 130,
+          height: 130,
+          border: '3px solid transparent',
+          borderImage: 'linear-gradient(135deg, #E8D5C4, #B5886A, #E8D5C4) 1',
+          borderRadius: '50%',
+          borderColor: '#C4996F',
+          opacity: 0.6,
+        }}
       />
 
-      {/* Inner ring — rotating counter-clockwise */}
+      {/* Inner ring — thicker, brighter, counter-rotating */}
       <div
-        className="absolute rounded-full border-[2.5px] border-[#B5886A] animate-[logo-spin_30s_linear_infinite_reverse]"
-        style={{ width: size * 0.64, height: size * 0.64 }}
+        className="absolute rounded-full ring-inner"
+        style={{
+          width: 100,
+          height: 100,
+          border: '3px solid #B5886A',
+        }}
       />
 
-      {/* Leaf SVG — static center */}
+      {/* Leaf — positioned lower-right inside ring, like on banner */}
       <svg
-        width={size * 0.35}
-        height={size * 0.35}
-        viewBox="0 0 50 50"
+        width="45"
+        height="45"
+        viewBox="0 0 45 45"
         fill="none"
-        className="relative z-10"
+        className="absolute"
+        style={{ bottom: 35, right: 35 }}
       >
         <path
-          d="M20 42 C20 42 10 28 22 16 C32 6 40 18 40 18 C40 18 32 36 22 38 C19 39 20 42 20 42 Z"
+          d="M15 38 C15 38 6 24 18 13 C28 4 36 15 36 15 C36 15 28 32 18 35 C15 36 15 38 15 38 Z"
           stroke="#B5886A"
-          strokeWidth="2.5"
+          strokeWidth="2"
           fill="none"
           strokeLinecap="round"
           strokeLinejoin="round"
         />
         <path
-          d="M22 38 Q28 28 29 18"
+          d="M18 34 Q24 24 25 14"
           stroke="#B5886A"
           strokeWidth="1.5"
           fill="none"
-          opacity="0.5"
+          opacity="0.4"
           strokeLinecap="round"
         />
       </svg>
-
-      <style>{`
-        @keyframes logo-spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
     </motion.div>
   );
 }
