@@ -233,14 +233,14 @@ export default function NutritionScreen() {
         <p className="text-sm text-gray-400 mt-1">Недельный план</p>
       </div>
 
-      {/* Water tracker */}
-      <div className="px-6 mb-4">
-        <WaterTracker />
-      </div>
-
       {/* Week strip */}
       <div className="px-6 mb-4">
         <WeekStrip selectedDay={selectedDay} onSelect={setSelectedDay} />
+      </div>
+
+      {/* Water tracker */}
+      <div className="px-6 mb-4">
+        <WaterTracker />
       </div>
 
       {/* Selected day label */}

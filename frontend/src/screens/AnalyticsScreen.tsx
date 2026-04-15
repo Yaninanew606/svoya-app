@@ -212,12 +212,15 @@ export default function AnalyticsScreen() {
           className="space-y-3"
         >
           <button
-            onClick={() => alert('Полный AI-анализ скоро будет доступен')}
+            onClick={() => { const el = document.getElementById('ai-toast'); if (el) { el.classList.remove('hidden'); setTimeout(() => el.classList.add('hidden'), 3000); } }}
             className="w-full py-3.5 rounded-2xl bg-[var(--primary)] text-white font-semibold text-sm flex items-center justify-center gap-2"
           >
             <BarChart3 size={18} />
             Получить подробный анализ
           </button>
+          <div id="ai-toast" className="hidden text-center text-sm text-gray-500 py-2">
+            Полный AI-анализ скоро будет доступен
+          </div>
           <button
             onClick={() => {
               const lines = [
