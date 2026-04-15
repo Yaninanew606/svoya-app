@@ -102,15 +102,17 @@ planRoutes.get('/plan/today', async (req, res) => {
       orderBy: { createdAt: 'desc' },
     });
 
+    // Always prefer currentPlan from User (has weeklyWorkout)
+    if (user.currentPlan) {
+      res.json({
+        ...(user.currentPlan as any),
+        streak: user.streak,
+        questionnaire: user.questionnaire,
+      });
+      return;
+    }
+
     if (!plan) {
-      if (user.currentPlan) {
-        res.json({
-          ...(user.currentPlan as any),
-          streak: user.streak,
-          questionnaire: user.questionnaire,
-        });
-        return;
-      }
       res.status(404).json({ error: 'No plan found. Generate one first.' });
       return;
     }

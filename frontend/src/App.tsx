@@ -49,8 +49,8 @@ function SessionRestorer({ children }: { children: React.ReactNode }) {
         });
         if (data.streak) setStreak(data.streak);
         if (data.questionnaire) setQuestionnaire(data.questionnaire);
-        // Navigate to weekly plan (returning user)
-        navigate('/weekly-plan', { replace: true });
+        // Navigate to nutrition (returning user's main screen)
+        navigate('/nutrition', { replace: true });
       })
       .catch(() => {
         // No plan found — show welcome screen as normal
