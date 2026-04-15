@@ -14,7 +14,7 @@ function HowItWorksModal({ onClose }: { onClose: () => void }) {
 
   return (
     <motion.div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-6"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-6"
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
       onClick={onClose}
     >
@@ -23,11 +23,11 @@ function HowItWorksModal({ onClose }: { onClose: () => void }) {
         initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
         onClick={(e) => e.stopPropagation()}
       >
-        <button onClick={onClose} className="absolute top-4 right-4 text-[var(--text)] opacity-40 text-xl">x</button>
+        <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 text-lg">x</button>
         <h3 className="font-[Cormorant_Garamond] text-2xl font-bold text-[var(--text)] mb-6 text-center">Как это работает</h3>
         <div className="relative overflow-hidden min-h-[120px]">
           <AnimatePresence mode="wait">
-            <motion.div key={slide} initial={{ x: 60, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: -60, opacity: 0 }} transition={{ duration: 0.25 }} className="flex flex-col items-center text-center gap-3">
+            <motion.div key={slide} initial={{ x: 60, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: -60, opacity: 0 }} className="flex flex-col items-center text-center gap-3">
               {(() => { const Icon = slides[slide].icon; return <Icon size={36} className="text-[var(--primary)]" />; })()}
               <p className="text-[var(--text)] text-base leading-relaxed">{slides[slide].text}</p>
             </motion.div>
@@ -51,13 +51,6 @@ export default function WelcomeScreen() {
   const navigate = useNavigate();
   const { isReturningUser, clearAll } = useAppStore();
   const [showModal, setShowModal] = useState(false);
-  const [bgLoaded, setBgLoaded] = useState(false);
-
-  useEffect(() => {
-    const img = new Image();
-    img.src = '/welcome-bg.jpg';
-    img.onload = () => setBgLoaded(true);
-  }, []);
 
   const handleReset = () => {
     clearAll();
@@ -76,62 +69,118 @@ export default function WelcomeScreen() {
 
   return (
     <motion.div
-      className="min-h-screen relative flex flex-col"
-      style={{ backgroundColor: '#262524' }}
+      className="min-h-screen flex flex-col items-center justify-center px-8"
+      style={{ backgroundColor: '#1E1E1E' }}
       initial={{ opacity: 0 }}
-      animate={{ opacity: bgLoaded ? 1 : 0 }}
-      transition={{ duration: 0.6 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.8 }}
     >
-      {/* Banner background — covers top, seamless with bottom */}
-      <div
-        className="flex-1 bg-cover bg-top bg-no-repeat relative"
-        style={{
-          backgroundImage: bgLoaded ? 'url(/welcome-bg.jpg)' : 'none',
-          minHeight: '58vh',
-        }}
-      >
-        {/* Spinning glow overlay on top of logo */}
-        <style>{`
-          @keyframes welcome-spin { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }
-        `}</style>
-        <div className="absolute inset-0 flex items-center justify-center" style={{ marginTop: '-8%' }}>
+      <style>{`
+        @keyframes ring1 { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }
+        @keyframes ring2 { from { transform: rotate(360deg) } to { transform: rotate(0deg) } }
+        @keyframes glow { 0%,100% { opacity: 0.25 } 50% { opacity: 0.45 } }
+      `}</style>
+
+      <div className="flex flex-col items-center gap-6">
+
+        {/* Animated logo */}
+        <motion.div
+          className="relative flex items-center justify-center"
+          style={{ width: 150, height: 150 }}
+          initial={{ scale: 0.7, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 1, ease: 'easeOut' }}
+        >
+          {/* Glow */}
           <div
-            className="rounded-full"
+            className="absolute rounded-full"
             style={{
-              width: '42vw',
-              height: '42vw',
-              maxWidth: 180,
-              maxHeight: 180,
-              border: '1.5px solid rgba(212,168,130,0.25)',
-              animation: 'welcome-spin 15s linear infinite',
+              width: 140, height: 140,
+              background: 'radial-gradient(circle, rgba(196,153,111,0.35) 0%, rgba(196,153,111,0.1) 50%, transparent 70%)',
+              animation: 'glow 4s ease-in-out infinite',
             }}
           />
-        </div>
-      </div>
 
-      {/* Bottom section */}
-      <div
-        className="flex flex-col items-center gap-4 px-8 pb-10 pt-4"
-        style={{ backgroundColor: '#262524' }}
-      >
+          {/* Outer ring */}
+          <div className="absolute" style={{ width: 130, height: 130, animation: 'ring1 18s linear infinite' }}>
+            <div className="w-full h-full rounded-full" style={{ border: '2px solid rgba(212,168,130,0.45)' }} />
+          </div>
+
+          {/* Inner ring */}
+          <div className="absolute" style={{ width: 100, height: 100, animation: 'ring2 25s linear infinite' }}>
+            <div className="w-full h-full rounded-full" style={{ border: '2.5px solid rgba(196,153,111,0.8)' }} />
+          </div>
+
+          {/* Leaf — positioned inside inner ring, lower-right like on banner */}
+          <svg width="40" height="50" viewBox="0 0 40 50" fill="none" className="absolute" style={{ bottom: 28, right: 32 }}>
+            <path
+              d="M14 42 C14 42 5 28 16 16 C25 6 33 17 33 17 C33 17 26 35 17 38 C14 39 14 42 14 42 Z"
+              stroke="rgba(196,153,111,0.9)"
+              strokeWidth="1.8"
+              fill="none"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M17 37 Q22 27 23 17"
+              stroke="rgba(196,153,111,0.4)"
+              strokeWidth="1.2"
+              fill="none"
+              strokeLinecap="round"
+            />
+          </svg>
+        </motion.div>
+
+        {/* App name */}
+        <motion.h1
+          className="text-white text-4xl tracking-wide"
+          style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 400 }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3, duration: 0.6 }}
+        >
+          Своя
+        </motion.h1>
+
+        {/* Slogan */}
+        <motion.p
+          className="text-center text-sm leading-relaxed"
+          style={{ color: 'rgba(255,255,255,0.4)' }}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5, duration: 0.6 }}
+        >
+          Питание и тренировки,<br />которые понимают твоё здоровье
+        </motion.p>
+
+        {/* CTA */}
         <motion.button
           whileTap={{ scale: 0.97 }}
           onClick={() => navigate(isReturningUser ? '/nutrition' : '/questionnaire')}
-          className="w-full max-w-xs rounded-2xl px-8 py-4 text-lg font-semibold shadow-lg"
+          className="w-full max-w-[260px] rounded-2xl py-4 text-base font-semibold mt-4"
           style={{ background: 'linear-gradient(135deg, #B5886A, #D4A882)', color: 'white' }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.7, duration: 0.5 }}
         >
           {isReturningUser ? 'Продолжить' : 'Начать'}
         </motion.button>
 
-        <button
+        {/* How it works */}
+        <motion.button
           onClick={() => setShowModal(true)}
-          className="text-gray-500 text-sm underline underline-offset-4"
+          className="text-sm underline underline-offset-4"
+          style={{ color: 'rgba(255,255,255,0.3)' }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.9 }}
         >
           Как это работает
-        </button>
+        </motion.button>
 
+        {/* Reset */}
         {isReturningUser && (
-          <button onClick={handleReset} className="text-gray-600 text-xs">
+          <button onClick={handleReset} className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.15)' }}>
             Начать заново
           </button>
         )}
