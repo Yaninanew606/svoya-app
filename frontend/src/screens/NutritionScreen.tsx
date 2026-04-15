@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Sunrise, Sun, Moon, Apple, ShoppingCart, Copy, Download,
-  Clock, ChevronDown, ChevronUp, Timer, Droplets,
+  Clock, ChevronDown, ChevronUp, Timer, Droplets, ClipboardList,
 } from 'lucide-react';
 import { useAppStore } from '../stores/appStore';
 import TabBar from '../components/TabBar';
@@ -409,6 +409,13 @@ export default function NutritionScreen() {
           <Droplets size={16} />
           Вода
         </button>
+        <button
+          onClick={() => navigate('/diary')}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-gray-200 text-sm font-medium text-gray-500"
+        >
+          <ClipboardList size={16} />
+          Дневник
+        </button>
       </div>
 
       {/* Slide panels */}
@@ -470,16 +477,6 @@ export default function NutritionScreen() {
           const firstMealLabel = fastingEnabled && key === 'lunch' ? 'Первый приём' : undefined;
           return <MealCard key={`${selectedDay}-${key}`} mealKey={key} meal={meal} index={index} mealTime={mealTime} labelOverride={firstMealLabel || labelOverride} />;
         })}
-      </div>
-
-      {/* Food diary link */}
-      <div className="px-6 mb-4">
-        <button
-          onClick={() => navigate('/diary')}
-          className="w-full py-3 rounded-2xl border border-[var(--primary)] text-[var(--primary)] font-semibold text-sm transition-colors hover:bg-[var(--primary)]/5"
-        >
-          Дневник питания
-        </button>
       </div>
 
       {/* Weekly grocery list */}
