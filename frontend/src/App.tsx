@@ -25,6 +25,17 @@ function Loading() {
   );
 }
 
+// Capture Telegram user name as early as possible
+function captureTelegramName() {
+  try {
+    const user = (window.Telegram?.WebApp?.initDataUnsafe?.user as any);
+    if (user?.first_name) {
+      localStorage.setItem('tg_first_name', user.first_name);
+    }
+  } catch {}
+}
+captureTelegramName();
+
 function SessionRestorer({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
   const location = useLocation();

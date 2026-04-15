@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, ChevronUp, Check, Flower2, RotateCcw, Wind, Settings2 } from 'lucide-react';
+import { ChevronDown, ChevronUp, Check, Flower2, RotateCcw, Wind, Settings2, ArrowUp, ArrowDown } from 'lucide-react';
 import { useAppStore } from '../stores/appStore';
 import type { Exercise, WorkoutPlan, DaySchedule } from '../types';
 import TabBar from '../components/TabBar';
@@ -382,7 +382,6 @@ export default function WorkoutScreen() {
   const [selectedDay, setSelectedDay] = useState(0);
   const [restExercises, setRestExercises] = useState<Exercise[] | null>(null);
   const [editMode, setEditMode] = useState((location.state as any)?.editMode === true);
-  const [swapFrom, setSwapFrom] = useState<number | null>(null);
 
   useEffect(() => {
     if (!plan) navigate('/', { replace: true });
@@ -401,34 +400,14 @@ export default function WorkoutScreen() {
 
   const weeklySchedule = plan.weeklyWorkout?.schedule;
 
-  const handleDayTap = (index: number) => {
-    if (!editMode) {
-      setSelectedDay(index);
-      return;
-    }
-
-    if (swapFrom === null) {
-      setSwapFrom(index);
-    } else {
-      if (swapFrom !== index && weeklySchedule) {
-        // Deep clone schedule to ensure React re-renders
-        const newSchedule = weeklySchedule.map(d => ({ ...d }));
-        const fromType = newSchedule[swapFrom].type;
-        const fromWorkout = newSchedule[swapFrom].workout;
-        newSchedule[swapFrom] = { ...newSchedule[swapFrom], type: newSchedule[index].type, workout: newSchedule[index].workout };
-        newSchedule[index] = { ...newSchedule[index], type: fromType, workout: fromWorkout };
-
-        // Update store with new plan object
-        const updatedPlan = {
-          ...plan,
-          weeklyWorkout: { schedule: newSchedule },
-          // Update today's workout too
-          workout: newSchedule.find(d => d.workout)?.workout || plan.workout,
-        };
-        setPlan(updatedPlan);
-      }
-      setSwapFrom(null);
-    }
+  const swapDays = (indexA: number, indexB: number) => {
+    if (!weeklySchedule || indexA < 0 || indexB >= weeklySchedule.length) return;
+    const newSchedule = weeklySchedule.map(d => ({ ...d }));
+    const tempType = newSchedule[indexA].type;
+    const tempWorkout = newSchedule[indexA].workout;
+    newSchedule[indexA] = { ...newSchedule[indexA], type: newSchedule[indexB].type, workout: newSchedule[indexB].workout };
+    newSchedule[indexB] = { ...newSchedule[indexB], type: tempType, workout: tempWorkout };
+    setPlan({ ...plan, weeklyWorkout: { schedule: newSchedule } });
   };
   const currentDaySchedule = weeklySchedule?.[selectedDay];
   const workout: WorkoutPlan | null = currentDaySchedule?.workout || plan.workout;
@@ -452,10 +431,7 @@ export default function WorkoutScreen() {
           <p className="text-sm text-gray-400">Недельная программа</p>
           {weeklySchedule && (
             <button
-              onClick={() => {
-                setEditMode(!editMode);
-                setSwapFrom(null);
-              }}
+              onClick={() => setEditMode(!editMode)}
               className={`flex items-center gap-1.5 text-sm font-medium px-3 py-1 rounded-lg transition-all ${
                 editMode
                   ? 'bg-[var(--primary)] text-white'
@@ -467,21 +443,48 @@ export default function WorkoutScreen() {
             </button>
           )}
         </div>
-        {editMode && (
-          <motion.p
-            initial={{ opacity: 0, y: -4 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-xs text-gray-400 mt-2"
-          >
-            Нажми два дня чтобы поменять местами
-          </motion.p>
-        )}
       </div>
 
-      {/* Weekly schedule strip */}
-      {weeklySchedule && (
+      {/* Edit mode: vertical list with arrow buttons */}
+      {editMode && weeklySchedule && (
         <div className="px-6 mb-4">
-          <WeekStrip schedule={weeklySchedule} selectedDay={selectedDay} onSelect={handleDayTap} editMode={editMode} swapFrom={swapFrom} />
+          <div className="flex flex-col gap-2">
+            {weeklySchedule.map((day, i) => (
+              <motion.div
+                key={`${day.day}-${day.type}`}
+                layout
+                className={`flex items-center gap-3 bg-white rounded-xl p-3 border ${TYPE_COLORS[day.type]?.replace('text-', 'border-') || 'border-gray-200'}`}
+              >
+                <span className="text-sm font-medium text-[var(--text)] w-8">{day.day.slice(0, 2)}</span>
+                <span className={`text-sm flex-1 ${TYPE_COLORS[day.type]?.split(' ')[1] || 'text-gray-500'}`}>
+                  {TYPE_LABELS[day.type]}
+                </span>
+                <div className="flex gap-1">
+                  <button
+                    onClick={() => swapDays(i - 1, i)}
+                    disabled={i === 0}
+                    className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center disabled:opacity-20"
+                  >
+                    <ArrowUp size={14} />
+                  </button>
+                  <button
+                    onClick={() => swapDays(i, i + 1)}
+                    disabled={i === weeklySchedule.length - 1}
+                    className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center disabled:opacity-20"
+                  >
+                    <ArrowDown size={14} />
+                  </button>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Weekly schedule strip (normal mode) */}
+      {!editMode && weeklySchedule && (
+        <div className="px-6 mb-4">
+          <WeekStrip schedule={weeklySchedule} selectedDay={selectedDay} onSelect={setSelectedDay} editMode={false} swapFrom={null} />
         </div>
       )}
 
