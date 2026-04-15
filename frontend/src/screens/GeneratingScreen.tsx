@@ -1,15 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Leaf } from 'lucide-react';
 import { useAppStore } from '../stores/appStore';
 import { api } from '../api/client';
 import type { QuestionnaireData } from '../types';
 
 const phrases = [
-  'Смотрю на твои ответы…',
-  'Подбираю подходящие упражнения…',
-  'Составляю меню на сегодня…',
-  'Почти готово! ✨',
+  'Смотрю на твои ответы...',
+  'Подбираю подходящие упражнения...',
+  'Составляю меню на сегодня...',
+  'Почти готово!',
 ];
 
 export default function GeneratingScreen() {
@@ -75,11 +76,11 @@ export default function GeneratingScreen() {
   return (
     <div className="bg-[#FAF7F4] min-h-screen flex flex-col items-center justify-center px-6">
       <motion.div
-        className="text-6xl mb-8"
+        className="mb-8"
         animate={{ scale: [0.8, 1.2, 0.8] }}
         transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
       >
-        🌿
+        <Leaf size={48} className="text-[var(--primary)]" />
       </motion.div>
 
       <div className="h-8 relative w-full flex items-center justify-center">

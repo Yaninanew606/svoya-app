@@ -141,18 +141,20 @@ function getScheduleForLevel(fitnessLevel: string): Array<{ day: string; type: '
 function buildNutritionForPreferences(
   foodPreferences: string[],
   dailySchedule: string,
-  measurements?: { height?: number; weight?: number; waist?: number }
+  measurements?: { height?: number; weight?: number; waist?: number },
+  nutritionMode?: string
 ) {
-  const noMeat = foodPreferences.includes('no_meat');
+  const noMeat = foodPreferences.includes('no_meat') || nutritionMode === 'vegetarian';
   const noDairy = foodPreferences.includes('no_dairy');
   const noGluten = foodPreferences.includes('no_gluten');
   const lowSugar = foodPreferences.includes('low_sugar');
   const intermittentFasting = foodPreferences.includes('intermittent_fasting');
+  const isBudget = nutritionMode === 'budget';
+  const isNoCook = nutritionMode === 'no-cook';
 
   // Adjust calories based on measurements
   let totalCalories = 1750;
   if (measurements?.weight && measurements?.height) {
-    // Mifflin-St Jeor for women, light activity
     const bmr = 10 * measurements.weight + 6.25 * measurements.height - 5 * 45 - 161;
     totalCalories = Math.round(bmr * 1.4);
   }
@@ -189,105 +191,360 @@ function buildNutritionForPreferences(
     };
   }
 
-  // Build meals based on preferences
-  const breakfast = noGluten
-    ? {
-        name: "Гречневая каша с бананом и семенами чиа",
-        description: "Рассыпчатая гречка с кусочками банана, семенами чиа и ложкой мёда. Без глютена.",
-        calories: Math.round(totalCalories * 0.25),
-        protein: 14,
-        ingredients: ["Гречневая крупа 70г", "Банан 1 шт", "Семена чиа 1 ст.л.", lowSugar ? "Стевия по вкусу" : "Мёд 1 ч.л.", noDairy ? "Растительное молоко 100мл" : "Молоко 2.5% 100мл"],
-        alternatives: [noDairy ? "Смузи на кокосовом молоке" : "Творог с фруктами", "Рисовая каша с ягодами"],
-        prepTime: 15,
-        timing: mealTiming.breakfast
-      }
-    : {
-        name: noDairy ? "Овсянка на воде с ягодами и орехами" : "Овсянка с ягодами и орехами",
-        description: noDairy
-          ? "Тёплая овсяная каша на воде с голубикой, малиной и грецкими орехами."
-          : "Тёплая овсяная каша на молоке с голубикой, малиной и грецкими орехами. Посыпьте корицей.",
-        calories: Math.round(totalCalories * 0.25),
-        protein: 15,
-        ingredients: ["Овсяные хлопья 60г", noDairy ? "Вода 200мл" : "Молоко 2.5% 200мл", "Голубика 50г", "Малина 50г", "Грецкие орехи 20г", lowSugar ? "Корица" : "Мёд 1 ч.л."],
-        alternatives: [noDairy ? "Смузи с бананом на растительном молоке" : "Творог с фруктами", "Гречневая каша с бананом"],
-        prepTime: 10,
-        timing: mealTiming.breakfast
-      };
+  // Helper: pick sweetener
+  const sweetener = lowSugar ? "Стевия по вкусу" : "Мёд 1 ч.л.";
+  // Helper: pick milk
+  const milk = (amount: string) => noDairy ? `Растительное молоко ${amount}` : `Молоко 2.5% ${amount}`;
 
-  const lunch = noMeat
-    ? {
-        name: "Чечевичный суп с овощами",
-        description: "Густой суп из красной чечевицы с морковью, сельдереем и куркумой. Питательный растительный белок.",
-        calories: Math.round(totalCalories * 0.3),
-        protein: 22,
-        ingredients: ["Красная чечевица 100г", "Морковь 1 шт", "Сельдерей 2 стебля", "Лук 1 шт", "Куркума 0.5 ч.л.", "Оливковое масло 1 ст.л."],
-        alternatives: ["Киноа с запечёнными овощами", "Фалафель с салатом"],
-        prepTime: 25,
-        timing: mealTiming.lunch
-      }
-    : {
-        name: "Куриная грудка с киноа и овощами",
-        description: "Запечённая куриная грудка с киноа, брокколи и сладким перцем. Заправьте оливковым маслом.",
-        calories: Math.round(totalCalories * 0.3),
-        protein: 35,
-        ingredients: ["Куриная грудка 150г", "Киноа 80г", "Брокколи 100г", "Сладкий перец 1 шт", "Оливковое масло 1 ст.л.", "Лимонный сок"],
-        alternatives: ["Рыба на пару с рисом", "Индейка с гречкой"],
-        prepTime: 25,
-        timing: mealTiming.lunch
-      };
+  // ── BREAKFAST ──
+  let breakfast: any;
 
-  const dinner = noMeat
-    ? {
-        name: "Тофу с запечёнными овощами",
-        description: "Маринованный тофу, запечённый с кабачками, помидорами и баклажанами. Лёгкий и сытный ужин.",
-        calories: Math.round(totalCalories * 0.28),
-        protein: 20,
-        ingredients: ["Тофу 200г", "Кабачок 1 шт", "Помидоры 2 шт", "Баклажан 0.5 шт", "Оливковое масло 1 ст.л.", "Соевый соус 1 ст.л."],
-        alternatives: ["Овощное рагу с нутом", "Фасолевое буррито"],
-        prepTime: 30,
-        timing: mealTiming.dinner
-      }
-    : {
-        name: "Лосось с запечёнными овощами",
-        description: "Филе лосося, запечённое с кабачками, помидорами и луком. Лёгкий и питательный ужин.",
-        calories: Math.round(totalCalories * 0.28),
-        protein: 30,
-        ingredients: ["Филе лосося 150г", "Кабачок 1 шт", "Помидоры 2 шт", "Лук красный 1 шт", "Оливковое масло 1 ст.л.", "Чеснок 2 зубчика"],
-        alternatives: ["Треска с овощами", "Омлет с зеленью"],
-        prepTime: 30,
-        timing: mealTiming.dinner
-      };
+  if (isNoCook) {
+    breakfast = {
+      name: noGluten ? "Гречневые хлопья с ягодами (без варки)" : "Овсянка ленивая (overnight) с ягодами",
+      description: noGluten
+        ? "Гречневые хлопья залить молоком с вечера. Утром добавить ягоды и орехи."
+        : "Овсяные хлопья залить молоком с вечера. Утром добавить ягоды и орехи. Готовить не нужно.",
+      calories: Math.round(totalCalories * 0.25),
+      protein: 14,
+      ingredients: [
+        noGluten ? "Гречневые хлопья 60г" : "Овсяные хлопья 60г",
+        milk("200мл"), "Голубика 50г", "Грецкие орехи 20г", sweetener
+      ],
+      alternatives: [noDairy ? "Банан с миндальной пастой" : "Творог с ягодами", "Мюсли с ягодами"],
+      prepTime: 0,
+      timing: mealTiming.breakfast
+    };
+  } else if (isBudget) {
+    breakfast = noGluten
+      ? {
+          name: "Гречневая каша с яйцом",
+          description: "Рассыпчатая гречка с варёным яйцом и щепоткой зелени. Бюджетный и сытный завтрак.",
+          calories: Math.round(totalCalories * 0.25),
+          protein: 18,
+          ingredients: ["Гречневая крупа 80г", "Яйцо куриное 1 шт", "Зелень (укроп/петрушка)", lowSugar ? "без добавок" : "Масло сливочное 5г"],
+          alternatives: ["Рисовая каша на воде", "Картофельное пюре с яйцом"],
+          prepTime: 15,
+          timing: mealTiming.breakfast
+        }
+      : {
+          name: noDairy ? "Овсянка на воде с бананом" : "Овсянка на молоке с бананом",
+          description: "Простая и дешёвая овсяная каша с бананом. Сытно и полезно.",
+          calories: Math.round(totalCalories * 0.25),
+          protein: 12,
+          ingredients: ["Овсяные хлопья 60г", noDairy ? "Вода 200мл" : "Молоко 2.5% 200мл", "Банан 1 шт", sweetener],
+          alternatives: ["Яичница с хлебом", "Гречневая каша"],
+          prepTime: 10,
+          timing: mealTiming.breakfast
+        };
+  } else if (noMeat && noGluten) {
+    breakfast = {
+      name: noDairy ? "Гречневая каша с ягодами и семенами" : "Творог с ягодами и гречневыми хлопьями",
+      description: noDairy
+        ? "Рассыпчатая гречка с малиной, голубикой и семенами чиа. Без глютена и молочных продуктов."
+        : "Мягкий творог с малиной, голубикой и гречневыми хлопьями. Без глютена, богат белком.",
+      calories: Math.round(totalCalories * 0.25),
+      protein: 16,
+      ingredients: noDairy
+        ? ["Гречневая крупа 70г", "Малина 50г", "Голубика 50г", "Семена чиа 1 ст.л.", sweetener]
+        : ["Творог 5% 150г", "Малина 50г", "Голубика 50г", "Гречневые хлопья 30г", sweetener],
+      alternatives: ["Рисовая каша с бананом", "Смузи из ягод с семенами льна"],
+      prepTime: 15,
+      timing: mealTiming.breakfast
+    };
+  } else if (noMeat) {
+    breakfast = {
+      name: noDairy ? "Овсянка на воде с ягодами и орехами" : "Творог с ягодами и гранолой",
+      description: noDairy
+        ? "Тёплая овсяная каша на воде с голубикой, малиной и грецкими орехами."
+        : "Мягкий творог с малиной, голубикой и хрустящей гранолой. Вкусный и полезный завтрак.",
+      calories: Math.round(totalCalories * 0.25),
+      protein: 18,
+      ingredients: noDairy
+        ? ["Овсяные хлопья 60г", "Вода 200мл", "Голубика 50г", "Малина 50г", "Грецкие орехи 20г", sweetener]
+        : ["Творог 5% 150г", "Малина 50г", "Голубика 50г", "Гранола 30г", sweetener],
+      alternatives: [noDairy ? "Смузи с бананом на растительном молоке" : "Гранола с йогуртом", "Овсянка с ягодами"],
+      prepTime: 10,
+      timing: mealTiming.breakfast
+    };
+  } else if (noGluten) {
+    breakfast = {
+      name: "Гречневая каша с бананом и семенами чиа",
+      description: "Рассыпчатая гречка с кусочками банана, семенами чиа. Без глютена.",
+      calories: Math.round(totalCalories * 0.25),
+      protein: 14,
+      ingredients: ["Гречневая крупа 70г", "Банан 1 шт", "Семена чиа 1 ст.л.", sweetener, milk("100мл")],
+      alternatives: [noDairy ? "Смузи на кокосовом молоке" : "Творог с фруктами", "Рисовая каша с ягодами"],
+      prepTime: 15,
+      timing: mealTiming.breakfast
+    };
+  } else {
+    // Standard with meat allowed
+    breakfast = {
+      name: noDairy ? "Овсянка на воде с ягодами и орехами" : "Овсянка с ягодами и орехами",
+      description: noDairy
+        ? "Тёплая овсяная каша на воде с голубикой, малиной и грецкими орехами."
+        : "Тёплая овсяная каша на молоке с голубикой, малиной и грецкими орехами. Посыпьте корицей.",
+      calories: Math.round(totalCalories * 0.25),
+      protein: 15,
+      ingredients: ["Овсяные хлопья 60г", noDairy ? "Вода 200мл" : "Молоко 2.5% 200мл", "Голубика 50г", "Малина 50г", "Грецкие орехи 20г", lowSugar ? "Корица" : "Мёд 1 ч.л."],
+      alternatives: [noDairy ? "Смузи с бананом на растительном молоке" : "Творог с фруктами", "Гречневая каша с бананом"],
+      prepTime: 10,
+      timing: mealTiming.breakfast
+    };
+  }
 
-  const snack = noDairy
-    ? {
-        name: "Яблоко с миндальной пастой",
-        description: "Нарезанное яблоко с ложкой миндальной пасты. Сытный перекус без молочных продуктов.",
-        calories: Math.round(totalCalories * 0.12),
-        protein: 6,
-        ingredients: ["Яблоко 1 шт", "Миндальная паста 1 ст.л."],
-        alternatives: ["Горсть орехов и сухофруктов", "Хумус с морковными палочками"],
-        prepTime: 2,
-        timing: mealTiming.snack
-      }
-    : {
-        name: "Греческий йогурт с мёдом",
-        description: "Натуральный йогурт с ложечкой мёда и горсткой миндаля. Отличный перекус.",
-        calories: Math.round(totalCalories * 0.12),
-        protein: 12,
-        ingredients: ["Греческий йогурт 150г", lowSugar ? "Корица" : "Мёд 1 ч.л.", "Миндаль 15г"],
-        alternatives: ["Яблоко с арахисовой пастой", "Кефир с отрубями"],
-        prepTime: 2,
-        timing: mealTiming.snack
-      };
+  // ── LUNCH ──
+  let lunch: any;
 
-  const mode = intermittentFasting ? 'intermittent_fasting' : 'standard';
+  if (isNoCook) {
+    lunch = noMeat
+      ? {
+          name: "Салат с нутом и овощами",
+          description: "Консервированный нут с помидорами, огурцами, зеленью и оливковым маслом. Без готовки.",
+          calories: Math.round(totalCalories * 0.3),
+          protein: 18,
+          ingredients: ["Нут консервированный 150г", "Помидоры 2 шт", "Огурец 1 шт", "Зелень (петрушка, укроп)", "Оливковое масло 1 ст.л.", "Лимонный сок"],
+          alternatives: ["Хумус с овощными палочками и хлебцами", "Салат с фасолью и кукурузой"],
+          prepTime: 0,
+          timing: mealTiming.lunch
+        }
+      : {
+          name: "Салат с тунцом и овощами",
+          description: "Консервированный тунец с помидорами, огурцами, листьями салата и оливковым маслом.",
+          calories: Math.round(totalCalories * 0.3),
+          protein: 30,
+          ingredients: ["Тунец консервированный 1 банка", "Помидоры 2 шт", "Огурец 1 шт", "Листья салата", "Оливковое масло 1 ст.л."],
+          alternatives: ["Бутерброды с курицей и овощами", "Салат с крабовыми палочками"],
+          prepTime: 0,
+          timing: mealTiming.lunch
+        };
+  } else if (isBudget) {
+    lunch = noMeat
+      ? {
+          name: "Суп из красной чечевицы",
+          description: "Густой чечевичный суп с морковью и луком. Дешёвый и богатый белком.",
+          calories: Math.round(totalCalories * 0.3),
+          protein: 20,
+          ingredients: ["Красная чечевица 100г", "Морковь 1 шт", "Лук 1 шт", "Картофель 1 шт", "Растительное масло 1 ст.л."],
+          alternatives: ["Гороховый суп", "Фасоль тушёная с овощами"],
+          prepTime: 25,
+          timing: mealTiming.lunch
+        }
+      : {
+          name: "Куриный суп с вермишелью",
+          description: "Простой куриный суп с вермишелью, морковью и картофелем. Бюджетно и сытно.",
+          calories: Math.round(totalCalories * 0.3),
+          protein: 28,
+          ingredients: ["Куриное бедро 150г", "Вермишель 50г", "Морковь 1 шт", "Картофель 1 шт", "Лук 1 шт"],
+          alternatives: ["Гречка с курицей", "Макароны по-флотски"],
+          prepTime: 30,
+          timing: mealTiming.lunch
+        };
+  } else if (noMeat && noGluten) {
+    lunch = {
+      name: "Чечевичный суп с овощами (без глютена)",
+      description: "Густой суп из красной чечевицы с морковью, сельдереем и куркумой. Подавать с рисовыми хлебцами.",
+      calories: Math.round(totalCalories * 0.3),
+      protein: 22,
+      ingredients: ["Красная чечевица 100г", "Морковь 1 шт", "Сельдерей 2 стебля", "Лук 1 шт", "Куркума 0.5 ч.л.", "Оливковое масло 1 ст.л."],
+      alternatives: ["Киноа с запечёнными овощами", "Рис с фасолью и овощами"],
+      prepTime: 25,
+      timing: mealTiming.lunch
+    };
+  } else if (noMeat) {
+    lunch = {
+      name: "Чечевичный суп с овощами",
+      description: "Густой суп из красной чечевицы с морковью, сельдереем и куркумой. Питательный растительный белок.",
+      calories: Math.round(totalCalories * 0.3),
+      protein: 22,
+      ingredients: ["Красная чечевица 100г", "Морковь 1 шт", "Сельдерей 2 стебля", "Лук 1 шт", "Куркума 0.5 ч.л.", "Оливковое масло 1 ст.л."],
+      alternatives: ["Фалафель с овощами и хумусом", "Паста с грибами и шпинатом"],
+      prepTime: 25,
+      timing: mealTiming.lunch
+    };
+  } else if (noGluten) {
+    lunch = {
+      name: "Куриная грудка с рисом и овощами",
+      description: "Запечённая куриная грудка с рисом, брокколи и сладким перцем. Без глютена.",
+      calories: Math.round(totalCalories * 0.3),
+      protein: 35,
+      ingredients: ["Куриная грудка 150г", "Рис 80г", "Брокколи 100г", "Сладкий перец 1 шт", "Оливковое масло 1 ст.л."],
+      alternatives: ["Рыба с гречкой", "Индейка с киноа"],
+      prepTime: 25,
+      timing: mealTiming.lunch
+    };
+  } else {
+    lunch = {
+      name: "Куриная грудка с киноа и овощами",
+      description: "Запечённая куриная грудка с киноа, брокколи и сладким перцем. Заправьте оливковым маслом.",
+      calories: Math.round(totalCalories * 0.3),
+      protein: 35,
+      ingredients: ["Куриная грудка 150г", "Киноа 80г", "Брокколи 100г", "Сладкий перец 1 шт", "Оливковое масло 1 ст.л.", "Лимонный сок"],
+      alternatives: ["Рыба на пару с рисом", "Индейка с гречкой"],
+      prepTime: 25,
+      timing: mealTiming.lunch
+    };
+  }
+
+  // ── DINNER ──
+  let dinner: any;
+
+  if (isNoCook) {
+    dinner = noMeat
+      ? {
+          name: "Хумус с овощными палочками и хлебцами",
+          description: "Готовый хумус с нарезанными огурцами, морковью, перцем и хлебцами. Без готовки.",
+          calories: Math.round(totalCalories * 0.28),
+          protein: 14,
+          ingredients: ["Хумус готовый 150г", "Огурец 1 шт", "Морковь 1 шт", "Перец сладкий 1 шт", noGluten ? "Рисовые хлебцы 3 шт" : "Хлебцы цельнозерновые 3 шт"],
+          alternatives: ["Салат с авокадо и нутом", "Роллы из лаваша с овощами"],
+          prepTime: 0,
+          timing: mealTiming.dinner
+        }
+      : {
+          name: "Бутерброды с рыбой и авокадо",
+          description: "Хлебцы с консервированной рыбой, авокадо и зеленью. Просто и быстро.",
+          calories: Math.round(totalCalories * 0.28),
+          protein: 22,
+          ingredients: [noGluten ? "Рисовые хлебцы 3 шт" : "Хлебцы цельнозерновые 3 шт", "Рыба консервированная 1 банка", "Авокадо 0.5 шт", "Зелень"],
+          alternatives: ["Салат с тунцом", "Сэндвич с курицей"],
+          prepTime: 0,
+          timing: mealTiming.dinner
+        };
+  } else if (isBudget) {
+    dinner = noMeat
+      ? {
+          name: "Картофель запечённый с фасолью",
+          description: "Запечённый картофель с тушёной фасолью и луком. Бюджетный и сытный ужин.",
+          calories: Math.round(totalCalories * 0.28),
+          protein: 16,
+          ingredients: ["Картофель 2 шт", "Фасоль консервированная 150г", "Лук 1 шт", "Растительное масло 1 ст.л.", "Зелень"],
+          alternatives: ["Макароны с овощным соусом", "Рис с тушёными овощами"],
+          prepTime: 30,
+          timing: mealTiming.dinner
+        }
+      : {
+          name: "Гречка с тушёной курицей",
+          description: "Гречневая каша с тушёным куриным бедром и луком. Дёшево и вкусно.",
+          calories: Math.round(totalCalories * 0.28),
+          protein: 28,
+          ingredients: ["Гречневая крупа 80г", "Куриное бедро 150г", "Лук 1 шт", "Морковь 1 шт", "Растительное масло 1 ст.л."],
+          alternatives: ["Рис с котлетой", "Картофельное пюре с рыбой"],
+          prepTime: 25,
+          timing: mealTiming.dinner
+        };
+  } else if (noMeat && noGluten) {
+    dinner = {
+      name: "Запечённые овощи с хумусом и киноа",
+      description: "Кабачки, помидоры и баклажаны, запечённые с оливковым маслом. Подавать с хумусом и киноа. Без глютена.",
+      calories: Math.round(totalCalories * 0.28),
+      protein: 18,
+      ingredients: ["Кабачок 1 шт", "Помидоры 2 шт", "Баклажан 0.5 шт", "Киноа 60г", "Хумус 50г", "Оливковое масло 1 ст.л."],
+      alternatives: ["Рататуй с рисом", "Омлет с овощами и зеленью"],
+      prepTime: 30,
+      timing: mealTiming.dinner
+    };
+  } else if (noMeat) {
+    dinner = {
+      name: "Запечённые овощи с хумусом",
+      description: "Кабачки, помидоры и баклажаны, запечённые с оливковым маслом и травами. Подавать с хумусом.",
+      calories: Math.round(totalCalories * 0.28),
+      protein: 16,
+      ingredients: ["Кабачок 1 шт", "Помидоры 2 шт", "Баклажан 0.5 шт", "Хумус 80г", "Оливковое масло 1 ст.л.", "Прованские травы"],
+      alternatives: ["Рататуй с киноа", "Омлет с зеленью и грибами"],
+      prepTime: 30,
+      timing: mealTiming.dinner
+    };
+  } else if (noGluten) {
+    dinner = {
+      name: "Лосось с запечёнными овощами",
+      description: "Филе лосося, запечённое с кабачками и помидорами. Без глютена.",
+      calories: Math.round(totalCalories * 0.28),
+      protein: 30,
+      ingredients: ["Филе лосося 150г", "Кабачок 1 шт", "Помидоры 2 шт", "Лук красный 1 шт", "Оливковое масло 1 ст.л.", "Чеснок 2 зубчика"],
+      alternatives: ["Треска с рисом", "Курица с гречкой"],
+      prepTime: 30,
+      timing: mealTiming.dinner
+    };
+  } else {
+    dinner = {
+      name: "Лосось с запечёнными овощами",
+      description: "Филе лосося, запечённое с кабачками, помидорами и луком. Лёгкий и питательный ужин.",
+      calories: Math.round(totalCalories * 0.28),
+      protein: 30,
+      ingredients: ["Филе лосося 150г", "Кабачок 1 шт", "Помидоры 2 шт", "Лук красный 1 шт", "Оливковое масло 1 ст.л.", "Чеснок 2 зубчика"],
+      alternatives: ["Треска с овощами", "Омлет с зеленью"],
+      prepTime: 30,
+      timing: mealTiming.dinner
+    };
+  }
+
+  // ── SNACK ──
+  let snack: any;
+
+  if (intermittentFasting) {
+    snack = null;
+  } else if (isNoCook) {
+    snack = noDairy
+      ? {
+          name: "Горсть орехов и сухофруктов",
+          description: "Микс из миндаля, кешью и кураги. Без готовки.",
+          calories: Math.round(totalCalories * 0.12),
+          protein: 6,
+          ingredients: ["Миндаль 15г", "Кешью 15г", lowSugar ? "Семена тыквы 10г" : "Курага 20г"],
+          alternatives: ["Банан", "Яблоко с миндальной пастой"],
+          prepTime: 0,
+          timing: mealTiming.snack
+        }
+      : {
+          name: "Йогурт с орехами",
+          description: "Готовый натуральный йогурт с горсткой орехов. Без готовки.",
+          calories: Math.round(totalCalories * 0.12),
+          protein: 10,
+          ingredients: ["Йогурт натуральный 150г", "Миндаль 15г", lowSugar ? "Корица" : "Мёд 1 ч.л."],
+          alternatives: ["Кефир с отрубями", "Яблоко"],
+          prepTime: 0,
+          timing: mealTiming.snack
+        };
+  } else if (noDairy) {
+    snack = {
+      name: "Яблоко с миндальной пастой",
+      description: "Нарезанное яблоко с ложкой миндальной пасты. Сытный перекус без молочных продуктов.",
+      calories: Math.round(totalCalories * 0.12),
+      protein: 6,
+      ingredients: ["Яблоко 1 шт", "Миндальная паста 1 ст.л."],
+      alternatives: ["Горсть орехов и сухофруктов", "Хумус с морковными палочками"],
+      prepTime: 2,
+      timing: mealTiming.snack
+    };
+  } else {
+    snack = {
+      name: "Греческий йогурт с мёдом",
+      description: "Натуральный йогурт с ложечкой мёда и горсткой миндаля. Отличный перекус.",
+      calories: Math.round(totalCalories * 0.12),
+      protein: 12,
+      ingredients: ["Греческий йогурт 150г", lowSugar ? "Корица" : "Мёд 1 ч.л.", "Миндаль 15г"],
+      alternatives: ["Яблоко с арахисовой пастой", "Кефир с отрубями"],
+      prepTime: 2,
+      timing: mealTiming.snack
+    };
+  }
+
+  // For intermittent fasting with standard/late schedule, skip breakfast (first meal at 12:00)
+  let finalBreakfast = breakfast;
+  if (intermittentFasting && (dailySchedule === 'standard' || dailySchedule === 'late')) {
+    finalBreakfast = null;
+  }
+
+  const mode = intermittentFasting ? 'intermittent_fasting' : isBudget ? 'budget' : isNoCook ? 'no-cook' : noMeat ? 'vegetarian' : 'standard';
 
   return {
     mode,
     totalCalories,
     macros: { protein: 85, fat: 58, carbs: 195 },
     ...(fastingNote ? { fastingNote } : {}),
-    meals: { breakfast, lunch, dinner, snack }
+    meals: { breakfast: finalBreakfast, lunch, dinner, snack }
   };
 }
 
@@ -319,7 +576,7 @@ function getMockPlan(params: {
   };
   const difficulty = params.difficulty || difficultyMap[fitnessLevel] || 'medium';
 
-  const nutrition = buildNutritionForPreferences(foodPreferences, dailySchedule, params.measurements);
+  const nutrition = buildNutritionForPreferences(foodPreferences, dailySchedule, params.measurements, params.nutritionMode);
 
   const scheduleTemplate = getScheduleForLevel(fitnessLevel);
 

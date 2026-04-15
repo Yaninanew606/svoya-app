@@ -1,24 +1,24 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ChevronDown, ChevronUp, Clock } from 'lucide-react';
+import { ChevronDown, ChevronUp, Clock, Sunrise, Sun, Moon, Apple, UtensilsCrossed, Coins, Leaf } from 'lucide-react';
 import { useAppStore } from '../stores/appStore';
 import TabBar from '../components/TabBar';
 import type { Meal } from '../types';
 
 const mealKeys = ['breakfast', 'lunch', 'dinner', 'snack'] as const;
 
-const mealLabels: Record<string, { emoji: string; label: string }> = {
-  breakfast: { emoji: '🌅', label: 'Завтрак' },
-  lunch: { emoji: '☀️', label: 'Обед' },
-  dinner: { emoji: '🌙', label: 'Ужин' },
-  snack: { emoji: '🍎', label: 'Перекус' },
+const mealLabels: Record<string, { icon: typeof Sunrise; label: string }> = {
+  breakfast: { icon: Sunrise, label: 'Завтрак' },
+  lunch: { icon: Sun, label: 'Обед' },
+  dinner: { icon: Moon, label: 'Ужин' },
+  snack: { icon: Apple, label: 'Перекус' },
 };
 
 const modeFilters = [
-  { key: 'no-cook' as const, label: 'Без готовки 🥗' },
-  { key: 'budget' as const, label: 'Бюджетно 💰' },
-  { key: 'vegetarian' as const, label: 'Вегетарианский 🌱' },
+  { key: 'no-cook' as const, label: 'Без готовки', icon: UtensilsCrossed },
+  { key: 'budget' as const, label: 'Бюджетно', icon: Coins },
+  { key: 'vegetarian' as const, label: 'Вегетарианский', icon: Leaf },
 ];
 
 export default function NutritionScreen() {
@@ -60,7 +60,7 @@ export default function NutritionScreen() {
           className="text-2xl font-bold text-[#3D2B1F] mb-4"
           style={{ fontFamily: 'Cormorant Garamond, serif' }}
         >
-          Питание на сегодня 🍽️
+          Питание на сегодня
         </h1>
 
         {/* Macro summary */}
@@ -88,16 +88,17 @@ export default function NutritionScreen() {
 
         {/* Mode filters */}
         <div className="flex gap-2 overflow-x-auto mb-5 -mx-5 px-5 scrollbar-hide">
-          {modeFilters.map(({ key, label }) => (
+          {modeFilters.map(({ key, label, icon: Icon }) => (
             <button
               key={key}
               onClick={() => handleModeClick(key)}
-              className={`whitespace-nowrap px-4 py-2 rounded-full text-sm transition-colors ${
+              className={`whitespace-nowrap px-4 py-2 rounded-full text-sm transition-colors flex items-center gap-1.5 ${
                 nutritionMode === key
                   ? 'bg-[#B5886A] text-white'
                   : 'bg-white border border-[#E8D5C4] text-[#3D2B1F]'
               }`}
             >
+              <Icon size={14} />
               {label}
             </button>
           ))}
@@ -107,7 +108,7 @@ export default function NutritionScreen() {
         {mealKeys.map((key, index) => {
           const meal: Meal | undefined = meals[key];
           if (!meal) return null;
-          const { emoji, label } = mealLabels[key];
+          const { icon: MealIcon, label } = mealLabels[key];
 
           return (
             <motion.div
@@ -118,7 +119,7 @@ export default function NutritionScreen() {
               className="bg-white rounded-2xl p-5 shadow-sm mb-4"
             >
               <div className="flex items-center gap-2 mb-2">
-                <span className="text-lg">{emoji}</span>
+                <MealIcon size={20} className="text-[var(--primary)]" />
                 <span className="font-bold text-[#3D2B1F]">{label}</span>
               </div>
 

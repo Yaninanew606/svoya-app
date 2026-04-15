@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Check, Zap, X, Activity, Heart, Minus, Sparkles } from 'lucide-react';
 import { useAppStore } from '../stores/appStore';
 import { api } from '../api/client';
 import type { DailyCheckin } from '../types';
@@ -9,7 +10,6 @@ import TabBar from '../components/TabBar';
 const TOTAL_STEPS = 4;
 
 function ProgressBar({ step }: { step: number }) {
-  // step 1-4 = questions, step 5 = summary
   const progress = step <= TOTAL_STEPS ? step / TOTAL_STEPS : 1;
   return (
     <div className="w-full h-1.5 bg-gray-200 rounded-full">
@@ -22,14 +22,38 @@ function ProgressBar({ step }: { step: number }) {
   );
 }
 
-interface OptionCardProps {
-  emoji: string;
+interface MoodCardProps {
+  label: string;
+  color: string;
+  bgColor: string;
+  borderColor: string;
+  selected: boolean;
+  onClick: () => void;
+}
+
+function MoodCard({ label, color, bgColor, borderColor, selected, onClick }: MoodCardProps) {
+  return (
+    <button
+      onClick={onClick}
+      className={`flex flex-col items-center gap-1.5 rounded-2xl p-4 transition-all ${bgColor} ${
+        selected
+          ? `border-2 ${borderColor}`
+          : 'border-2 border-transparent'
+      }`}
+    >
+      <span className={`text-sm font-semibold ${color}`}>{label}</span>
+    </button>
+  );
+}
+
+interface IconOptionCardProps {
+  icon: React.ReactNode;
   label: string;
   selected: boolean;
   onClick: () => void;
 }
 
-function OptionCard({ emoji, label, selected, onClick }: OptionCardProps) {
+function IconOptionCard({ icon, label, selected, onClick }: IconOptionCardProps) {
   return (
     <button
       onClick={onClick}
@@ -39,7 +63,7 @@ function OptionCard({ emoji, label, selected, onClick }: OptionCardProps) {
           : 'border-2 border-transparent'
       }`}
     >
-      <span className="text-4xl">{emoji}</span>
+      {icon}
       <span className="text-sm text-[var(--text)] font-medium">{label}</span>
     </button>
   );
@@ -101,14 +125,14 @@ export default function CheckinScreen() {
   };
 
   const summaryLabels = {
-    mood: { 1: '😩 Плохо', 2: '😕 Так себе', 3: '😊 Нормально', 4: '😄 Отлично' },
+    mood: { 1: 'Плохо', 2: 'Так себе', 3: 'Нормально', 4: 'Отлично' },
     sleep: { yes: 'Да', no: 'Нет', almost: 'Почти' },
-    nutrition: { yes: '✅ Да', partial: '⚡ Частично', no: '❌ Нет' },
+    nutrition: { yes: 'Да', partial: 'Частично', no: 'Нет' },
     workout: {
-      yes: '✅ Да',
-      partial: '🏃 Частично',
-      no: '❌ Нет',
-      'skipped-health': '🤕 Пропустила',
+      yes: 'Да',
+      partial: 'Частично',
+      no: 'Нет',
+      'skipped-health': 'Пропустила',
     },
   } as const;
 
@@ -134,20 +158,38 @@ export default function CheckinScreen() {
               Как ты себя чувствуешь?
             </h2>
             <div className="grid grid-cols-4 gap-3">
-              {([
-                { emoji: '😩', label: 'Плохо', value: 1 },
-                { emoji: '😕', label: 'Так себе', value: 2 },
-                { emoji: '😊', label: 'Нормально', value: 3 },
-                { emoji: '😄', label: 'Отлично', value: 4 },
-              ] as const).map((opt) => (
-                <OptionCard
-                  key={opt.value}
-                  emoji={opt.emoji}
-                  label={opt.label}
-                  selected={checkin.mood === opt.value}
-                  onClick={() => setCheckin({ mood: opt.value })}
-                />
-              ))}
+              <MoodCard
+                label="Плохо"
+                color="text-red-600"
+                bgColor="bg-red-50"
+                borderColor="border-red-400"
+                selected={checkin.mood === 1}
+                onClick={() => setCheckin({ mood: 1 })}
+              />
+              <MoodCard
+                label="Так себе"
+                color="text-orange-600"
+                bgColor="bg-orange-50"
+                borderColor="border-orange-400"
+                selected={checkin.mood === 2}
+                onClick={() => setCheckin({ mood: 2 })}
+              />
+              <MoodCard
+                label="Нормально"
+                color="text-blue-600"
+                bgColor="bg-blue-50"
+                borderColor="border-blue-400"
+                selected={checkin.mood === 3}
+                onClick={() => setCheckin({ mood: 3 })}
+              />
+              <MoodCard
+                label="Отлично"
+                color="text-green-600"
+                bgColor="bg-green-50"
+                borderColor="border-green-400"
+                selected={checkin.mood === 4}
+                onClick={() => setCheckin({ mood: 4 })}
+              />
             </div>
           </motion.div>
         )}
@@ -169,19 +211,24 @@ export default function CheckinScreen() {
               Сон был нормальным?
             </h2>
             <div className="grid grid-cols-3 gap-3">
-              {([
-                { emoji: '✅', label: 'Да', value: 'yes' as const },
-                { emoji: '❌', label: 'Нет', value: 'no' as const },
-                { emoji: '😐', label: 'Почти', value: 'almost' as const },
-              ]).map((opt) => (
-                <OptionCard
-                  key={opt.value}
-                  emoji={opt.emoji}
-                  label={opt.label}
-                  selected={checkin.sleep === opt.value}
-                  onClick={() => setCheckin({ sleep: opt.value })}
-                />
-              ))}
+              <IconOptionCard
+                icon={<Check size={28} className="text-green-500" />}
+                label="Да"
+                selected={checkin.sleep === 'yes'}
+                onClick={() => setCheckin({ sleep: 'yes' })}
+              />
+              <IconOptionCard
+                icon={<X size={28} className="text-red-400" />}
+                label="Нет"
+                selected={checkin.sleep === 'no'}
+                onClick={() => setCheckin({ sleep: 'no' })}
+              />
+              <IconOptionCard
+                icon={<Minus size={28} className="text-gray-400" />}
+                label="Почти"
+                selected={checkin.sleep === 'almost'}
+                onClick={() => setCheckin({ sleep: 'almost' })}
+              />
             </div>
           </motion.div>
         )}
@@ -203,19 +250,24 @@ export default function CheckinScreen() {
               Удалось придерживаться питания?
             </h2>
             <div className="grid grid-cols-3 gap-3">
-              {([
-                { emoji: '✅', label: 'Да', value: 'yes' as const },
-                { emoji: '⚡', label: 'Частично', value: 'partial' as const },
-                { emoji: '❌', label: 'Нет', value: 'no' as const },
-              ]).map((opt) => (
-                <OptionCard
-                  key={opt.value}
-                  emoji={opt.emoji}
-                  label={opt.label}
-                  selected={checkin.nutrition === opt.value}
-                  onClick={() => setCheckin({ nutrition: opt.value })}
-                />
-              ))}
+              <IconOptionCard
+                icon={<Check size={28} className="text-green-500" />}
+                label="Да"
+                selected={checkin.nutrition === 'yes'}
+                onClick={() => setCheckin({ nutrition: 'yes' })}
+              />
+              <IconOptionCard
+                icon={<Zap size={28} className="text-amber-500" />}
+                label="Частично"
+                selected={checkin.nutrition === 'partial'}
+                onClick={() => setCheckin({ nutrition: 'partial' })}
+              />
+              <IconOptionCard
+                icon={<X size={28} className="text-red-400" />}
+                label="Нет"
+                selected={checkin.nutrition === 'no'}
+                onClick={() => setCheckin({ nutrition: 'no' })}
+              />
             </div>
           </motion.div>
         )}
@@ -237,20 +289,30 @@ export default function CheckinScreen() {
               Тренировка выполнена?
             </h2>
             <div className="grid grid-cols-2 gap-3">
-              {([
-                { emoji: '✅', label: 'Да', value: 'yes' as const },
-                { emoji: '🏃', label: 'Частично', value: 'partial' as const },
-                { emoji: '❌', label: 'Нет', value: 'no' as const },
-                { emoji: '🤕', label: 'Пропустила', value: 'skipped-health' as const },
-              ]).map((opt) => (
-                <OptionCard
-                  key={opt.value}
-                  emoji={opt.emoji}
-                  label={opt.label}
-                  selected={checkin.workout === opt.value}
-                  onClick={() => setCheckin({ workout: opt.value })}
-                />
-              ))}
+              <IconOptionCard
+                icon={<Check size={28} className="text-green-500" />}
+                label="Да"
+                selected={checkin.workout === 'yes'}
+                onClick={() => setCheckin({ workout: 'yes' })}
+              />
+              <IconOptionCard
+                icon={<Activity size={28} className="text-amber-500" />}
+                label="Частично"
+                selected={checkin.workout === 'partial'}
+                onClick={() => setCheckin({ workout: 'partial' })}
+              />
+              <IconOptionCard
+                icon={<X size={28} className="text-red-400" />}
+                label="Нет"
+                selected={checkin.workout === 'no'}
+                onClick={() => setCheckin({ workout: 'no' })}
+              />
+              <IconOptionCard
+                icon={<Heart size={28} className="text-rose-400" />}
+                label="Пропустила"
+                selected={checkin.workout === 'skipped-health'}
+                onClick={() => setCheckin({ workout: 'skipped-health' })}
+              />
             </div>
           </motion.div>
         )}
@@ -289,16 +351,17 @@ export default function CheckinScreen() {
               <button
                 disabled={submitting}
                 onClick={() => handleSubmit('good')}
-                className="w-full py-3.5 rounded-2xl bg-[var(--primary)] text-white font-semibold disabled:opacity-50"
+                className="w-full py-3.5 rounded-2xl bg-[var(--primary)] text-white font-semibold disabled:opacity-50 flex items-center justify-center gap-2"
               >
-                Всё хорошо ✨
+                <Sparkles size={18} />
+                Все хорошо
               </button>
               <button
                 disabled={submitting}
                 onClick={() => handleSubmit('hard-day')}
                 className="w-full py-3 rounded-2xl border-2 border-[var(--primary)] text-[var(--primary)] font-semibold disabled:opacity-50"
               >
-                Был тяжёлый день 😔
+                Был тяжёлый день
               </button>
               <button
                 disabled={submitting}

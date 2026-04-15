@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Leaf, Flame, Sparkles, Calendar, Pencil } from 'lucide-react';
 import { useAppStore } from '../stores/appStore';
 import { api } from '../api/client';
 import TabBar from '../components/TabBar';
@@ -22,7 +23,7 @@ export default function SupportScreen() {
       api
         .getMotivation('after-checkin')
         .then((r) => setSupportMessage(r.message))
-        .catch(() => setSupportMessage('Ты на правильном пути. Каждый день — это шаг вперёд 💛'))
+        .catch(() => setSupportMessage('Ты на правильном пути. Каждый день -- это шаг вперёд.'))
         .finally(() => setLoading(false));
     }
   }, [incoming]);
@@ -34,7 +35,7 @@ export default function SupportScreen() {
       setSupportMessage(r.message);
       setMessageKey((k) => k + 1);
     } catch {
-      setSupportMessage('Верь в себя — ты уже делаешь больше, чем вчера ✨');
+      setSupportMessage('Верь в себя -- ты уже делаешь больше, чем вчера.');
       setMessageKey((k) => k + 1);
     } finally {
       setLoading(false);
@@ -53,15 +54,14 @@ export default function SupportScreen() {
       className="min-h-screen bg-[#FAF7F4] pb-24"
     >
       <div className="max-w-md mx-auto px-5 pt-10 flex flex-col items-center gap-6">
-        {/* Emoji */}
-        <motion.span
+        {/* Icon */}
+        <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ type: 'spring', stiffness: 200, delay: 0.2 }}
-          className="text-6xl"
         >
-          🌿
-        </motion.span>
+          <Leaf size={48} className="text-[var(--primary)]" />
+        </motion.div>
 
         {/* Title */}
         <motion.h1
@@ -97,9 +97,10 @@ export default function SupportScreen() {
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.4 }}
-            className="bg-[#E8D5C4] text-[#3D2B1F] font-semibold px-5 py-2 rounded-full shadow-sm"
+            className="bg-[#E8D5C4] text-[#3D2B1F] font-semibold px-5 py-2 rounded-full shadow-sm flex items-center gap-2"
           >
-            🔥 {streak} дней подряд
+            <Flame size={18} className="text-orange-500" />
+            {streak} дней подряд
           </motion.div>
         )}
 
@@ -123,23 +124,26 @@ export default function SupportScreen() {
           <button
             onClick={handleMotivate}
             disabled={loading}
-            className="w-full py-3 rounded-xl bg-[#B5886A] text-white font-semibold shadow-md hover:opacity-90 transition disabled:opacity-50"
+            className="w-full py-3 rounded-xl bg-[#B5886A] text-white font-semibold shadow-md hover:opacity-90 transition disabled:opacity-50 flex items-center justify-center gap-2"
           >
-            Мотивируй меня 💫
+            <Sparkles size={18} />
+            Мотивируй меня
           </button>
 
           <button
             onClick={() => setShowTomorrow((v) => !v)}
-            className="w-full py-3 rounded-xl bg-white text-[#3D2B1F] font-semibold shadow-sm border border-[#E8D5C4] hover:bg-[#E8D5C4]/30 transition"
+            className="w-full py-3 rounded-xl bg-white text-[#3D2B1F] font-semibold shadow-sm border border-[#E8D5C4] hover:bg-[#E8D5C4]/30 transition flex items-center justify-center gap-2"
           >
-            Что завтра? 📅
+            <Calendar size={18} />
+            Что завтра?
           </button>
 
           <button
             onClick={() => navigate('/questionnaire')}
-            className="w-full py-3 rounded-xl bg-white text-[#3D2B1F] font-semibold shadow-sm border border-[#E8D5C4] hover:bg-[#E8D5C4]/30 transition"
+            className="w-full py-3 rounded-xl bg-white text-[#3D2B1F] font-semibold shadow-sm border border-[#E8D5C4] hover:bg-[#E8D5C4]/30 transition flex items-center justify-center gap-2"
           >
-            Изменить план ✏️
+            <Pencil size={18} />
+            Изменить план
           </button>
 
           <button

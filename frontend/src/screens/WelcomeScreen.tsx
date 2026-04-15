@@ -1,15 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Leaf, MessageCircle, ClipboardList, Heart } from 'lucide-react';
 import { useAppStore } from '../stores/appStore';
 
 function HowItWorksModal({ onClose }: { onClose: () => void }) {
   const [slide, setSlide] = useState(0);
 
   const slides = [
-    { num: '1', emoji: '💬', text: 'Ответь на 5 вопросов \u2192 я пойму твой ритм жизни' },
-    { num: '2', emoji: '📋', text: 'Получи план питания и тренировки на каждый день' },
-    { num: '3', emoji: '🤍', text: 'Я буду адаптировать план под твоё самочувствие' },
+    { num: '1', icon: MessageCircle, text: 'Ответь на 5 вопросов \u2192 я пойму твой ритм жизни' },
+    { num: '2', icon: ClipboardList, text: 'Получи план питания и тренировки на каждый день' },
+    { num: '3', icon: Heart, text: 'Я буду адаптировать план под твоё самочувствие' },
   ];
 
   return (
@@ -48,7 +49,10 @@ function HowItWorksModal({ onClose }: { onClose: () => void }) {
               transition={{ duration: 0.25 }}
               className="flex flex-col items-center text-center gap-3"
             >
-              <span className="text-4xl">{slides[slide].emoji}</span>
+              {(() => {
+                const Icon = slides[slide].icon;
+                return <Icon size={36} className="text-[var(--primary)]" />;
+              })()}
               <p className="text-[var(--text)] text-base leading-relaxed">
                 {slides[slide].text}
               </p>
@@ -108,10 +112,10 @@ export default function WelcomeScreen() {
       transition={{ duration: 0.6, ease: 'easeOut' }}
     >
       <div className="text-center flex flex-col items-center gap-6">
-        <span className="text-6xl">🌿</span>
+        <Leaf size={48} className="text-[var(--primary)]" />
 
-        <h1 className="font-[Cormorant_Garamond] text-5xl font-bold text-[var(--text)]">
-          Привет 🌿
+        <h1 className="font-[Cormorant_Garamond] text-5xl font-bold text-[var(--text)] flex items-center gap-3">
+          Привет <Leaf size={32} className="text-[var(--primary)] inline-block" />
         </h1>
 
         <p className="text-[var(--text)] opacity-70 text-base leading-relaxed max-w-xs">
